@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:proyek_pos/page/Loginpage.dart';
 import 'package:proyek_pos/style/colors.dart';
 
 class Onboardingpage extends StatefulWidget {
@@ -84,6 +85,7 @@ class _OnboardingpageState extends State<Onboardingpage> {
                   child: TextButton(
                     onPressed: () {
                       // Aksi ketika tombol ditekan
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
                     },
                     style: TextButton.styleFrom(
                       backgroundColor: Color.fromRGBO(254, 253, 248, 1),

@@ -1,6 +1,8 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:proyek_pos/page/BottomNavbar.dart';
+import 'package:proyek_pos/page/DashboardPage.dart';
 import 'package:proyek_pos/style/colors.dart';
 
 class LoginPage extends StatefulWidget {
@@ -134,6 +136,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: TextButton(
                     onPressed: () {
                       // Aksi ketika tombol ditekan
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => BottomNavbar()));
                     },
                     style: TextButton.styleFrom(
                       backgroundColor: Color.fromRGBO(75, 16, 16, 1),
