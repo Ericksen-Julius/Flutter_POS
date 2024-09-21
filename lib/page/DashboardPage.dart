@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:proyek_pos/page/CardMenu.dart';
 import 'package:proyek_pos/page/CardProduk.dart';
+import 'package:proyek_pos/page/OnBoardingPage.dart';
+import 'package:proyek_pos/page/TransaksiPenjualanPage.dart';
 
 class Dashboardpage extends StatefulWidget {
   const Dashboardpage({super.key});
@@ -13,6 +15,12 @@ class Dashboardpage extends StatefulWidget {
 }
 
 class _DashboardpageState extends State<Dashboardpage> {
+  final List<Widget> _menuPages = [
+    TransaksiPenjualanPage(),
+    TransaksiPenjualanPage(),
+    TransaksiPenjualanPage(),
+    TransaksiPenjualanPage(),
+  ];
   final List<String> carouselImages = [
     'assets/banner1.png',
     'assets/banner2.png',
@@ -167,6 +175,7 @@ class _DashboardpageState extends State<Dashboardpage> {
                     return CardMenu(
                       imagePath: menuImages[index],
                       label: menuLabels[index],
+                      page: _menuPages[index],
                     );
                   }),
                 ),

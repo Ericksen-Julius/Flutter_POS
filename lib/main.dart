@@ -21,7 +21,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: '/transaksipenjualan',
+      initialRoute: '/splash',
       routes: {
         '/': (context) => BottomNavbar(),
         '/splash': (context) => SplashScreenPage(),
