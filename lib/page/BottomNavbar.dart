@@ -1,8 +1,9 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:proyek_pos/page/DashboardPage.dart';
 import 'package:proyek_pos/page/Profile.dart';
 import 'package:proyek_pos/page/Riwayat.dart';
-
 
 class BottomNavbar extends StatefulWidget {
   BottomNavbar({super.key});
@@ -12,7 +13,7 @@ class BottomNavbar extends StatefulWidget {
 }
 
 class _BottomNavbarState extends State<BottomNavbar> {
-  int indexNow = 0; 
+  int indexNow = 0;
   final List<Widget> _pages = [
     Dashboardpage(),
     Riwayat(),
@@ -23,7 +24,7 @@ class _BottomNavbarState extends State<BottomNavbar> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color.fromRGBO(255, 235, 222, 1),
-      body: _pages[indexNow], 
+      body: _pages[indexNow],
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Color.fromRGBO(255, 235, 222, 1),
         unselectedItemColor: Color.fromRGBO(90, 27, 27, 1),

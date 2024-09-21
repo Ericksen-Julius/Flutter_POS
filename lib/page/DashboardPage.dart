@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:proyek_pos/page/CardMenu.dart';
@@ -11,33 +13,48 @@ class Dashboardpage extends StatefulWidget {
 }
 
 class _DashboardpageState extends State<Dashboardpage> {
-
   final List<String> carouselImages = [
-      'assets/banner1.png', 
-      'assets/banner2.png',
-      'assets/banner3.png',
-      'assets/banner4.png'
-    ];
+    'assets/banner1.png',
+    'assets/banner2.png',
+    'assets/banner3.png',
+    'assets/banner4.png'
+  ];
 
-    final List<String> menuImages = [
-      'assets/transaksi.png', 
-      'assets/stokbarang.png',
-      'assets/customer.png',
-      'assets/kurs.png'
-    ];
+  final List<String> menuImages = [
+    'assets/transaksi.png',
+    'assets/stokbarang.png',
+    'assets/customer.png',
+    'assets/kurs.png'
+  ];
 
-    final List<String> menuLabels = [
-      'Transaksi Baru', 
-      'Stok Barang',
-      'Customer',
-      'Kurs'
-    ];
+  final List<String> menuLabels = [
+    'Transaksi Baru',
+    'Stok Barang',
+    'Customer',
+    'Kurs'
+  ];
 
-final List<Map<String, String>> products = [
-    {'imagePath': 'assets/ProductImage.png', 'label': 'UBS Gold Gelang Emas', 'harga': 'Rp.5.240.000'},
-    {'imagePath': 'assets/ProductImage.png', 'label': 'UBS Gold Gelang Emas', 'harga': 'Rp.5.240.000'},
-    {'imagePath': 'assets/ProductImage.png', 'label': 'UBS Gold Gelang Emas', 'harga': 'Rp.5.240.000'},
-    {'imagePath': 'assets/ProductImage.png', 'label': 'UBS Gold Gelang Emas', 'harga': 'Rp.5.240.000'},
+  final List<Map<String, String>> products = [
+    {
+      'imagePath': 'assets/ProductImage.png',
+      'label': 'UBS Gold Gelang Emas',
+      'harga': 'Rp.5.240.000'
+    },
+    {
+      'imagePath': 'assets/ProductImage.png',
+      'label': 'UBS Gold Gelang Emas',
+      'harga': 'Rp.5.240.000'
+    },
+    {
+      'imagePath': 'assets/ProductImage.png',
+      'label': 'UBS Gold Gelang Emas',
+      'harga': 'Rp.5.240.000'
+    },
+    {
+      'imagePath': 'assets/ProductImage.png',
+      'label': 'UBS Gold Gelang Emas',
+      'harga': 'Rp.5.240.000'
+    },
   ];
 
   @override
@@ -48,20 +65,18 @@ final List<Map<String, String>> products = [
           TextSpan(
             children: [
               TextSpan(
-                text: 'UBS', 
+                text: 'UBS',
                 style: TextStyle(
-                  color: Color.fromRGBO(75, 16, 16, 1), 
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Plus Jakarta Sans Bold' 
-                ),
+                    color: Color.fromRGBO(75, 16, 16, 1),
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Plus Jakarta Sans Bold'),
               ),
               TextSpan(
-                text: 'POS', 
+                text: 'POS',
                 style: TextStyle(
-                  color: Color.fromRGBO(40, 45, 48, 1), 
-                  fontWeight: FontWeight.bold, 
-                  fontFamily: 'Plus Jakarta Sans Bold'
-                ),
+                    color: Color.fromRGBO(40, 45, 48, 1),
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Plus Jakarta Sans Bold'),
               ),
             ],
           ),
@@ -71,8 +86,10 @@ final List<Map<String, String>> products = [
           onPressed: () {}, // ini isi sendiri nanti
         ),
         actions: [
-          IconButton(onPressed: () {}, // ini juga isi sendiri
-          icon: Icon(Icons.settings))],
+          IconButton(
+              onPressed: () {}, // ini juga isi sendiri
+              icon: Icon(Icons.settings))
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -83,64 +100,66 @@ final List<Map<String, String>> products = [
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                  Color(0xFFFCF3EC), 
-                  Color(0xFFFFFFFF), 
+                  Color(0xFFFCF3EC),
+                  Color(0xFFFFFFFF),
                 ])),
-                child: Column(
-                  children: [
-                    SizedBox(height: 16.0),
-                    CarouselSlider(
-                      options: CarouselOptions(
-                      height: 150.0,
-                      autoPlay: true,
-                      enlargeCenterPage: true,
-                      aspectRatio: 16 / 9,
-                      autoPlayCurve: Curves.fastOutSlowIn,
-                      enableInfiniteScroll: true,
-                      autoPlayAnimationDuration: Duration(milliseconds: 500),
-                      viewportFraction: 1.0,
-                    ),
-                    items: carouselImages.map((imagePath) {
+            child: Column(
+              children: [
+                SizedBox(height: 16.0),
+                CarouselSlider(
+                  options: CarouselOptions(
+                    height: 150.0,
+                    autoPlay: true,
+                    enlargeCenterPage: true,
+                    aspectRatio: 16 / 9,
+                    autoPlayCurve: Curves.fastOutSlowIn,
+                    enableInfiniteScroll: true,
+                    autoPlayAnimationDuration: Duration(milliseconds: 500),
+                    viewportFraction: 1.0,
+                  ),
+                  items: carouselImages.map((imagePath) {
                     return Container(
                       child: Center(
                         child: Image.asset(
                           imagePath,
                           fit: BoxFit.cover,
-                          width: MediaQuery.of(context).size.width, 
+                          width: MediaQuery.of(context).size.width,
                         ),
                       ),
                     );
                   }).toList(),
                 ),
-                  SizedBox(height: 16.0),
-                  Center(
+                SizedBox(height: 16.0),
+                Center(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Text(
                       'Selamat datang di MiniPOS UBS, aplikasi untuk menunjang transaksi penjualan.',
-                      textAlign: TextAlign.center, 
+                      textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 18.0, 
+                        fontSize: 18.0,
                         fontFamily: 'Plus Jakarta Sans',
                       ),
                     ),
                   ),
                 ),
                 SizedBox(height: 8.0),
-                Text('Menu Utama',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontFamily: 'Plus Jakarta Sans Bold',
-                  color: Color.fromRGBO(75, 16, 16, 1), 
-                ),),
+                Text(
+                  'Menu Utama',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontFamily: 'Plus Jakarta Sans Bold',
+                    color: Color.fromRGBO(75, 16, 16, 1),
+                  ),
+                ),
                 SizedBox(height: 8.0),
                 // Adding a horizontal line (divider) under "Menu Utama"
                 Divider(
-                  color: Color.fromRGBO(75, 16, 16, 1),  // Color of the line
-                  thickness: 2.0,     // Thickness of the line
-                  indent: 20.0,       // Left padding
-                  endIndent: 20.0,    // Right padding
+                  color: Color.fromRGBO(75, 16, 16, 1), // Color of the line
+                  thickness: 2.0, // Thickness of the line
+                  indent: 20.0, // Left padding
+                  endIndent: 20.0, // Right padding
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -157,17 +176,20 @@ final List<Map<String, String>> products = [
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Katalog Produk',
-                      style: TextStyle(
-                              fontSize: 18.0, 
-                              fontFamily: 'Plus Jakarta Sans Bold',
-                            ),),
-                            Text('Lihat Semua',
-                      style: TextStyle(
-                              fontSize: 14.0, 
-                              fontFamily: 'Plus Jakarta Sans Bold',
-                              color: Color.fromRGBO(5, 34, 131, 1)
-                            ),),
+                      Text(
+                        'Katalog Produk',
+                        style: TextStyle(
+                          fontSize: 18.0,
+                          fontFamily: 'Plus Jakarta Sans Bold',
+                        ),
+                      ),
+                      Text(
+                        'Lihat Semua',
+                        style: TextStyle(
+                            fontSize: 14.0,
+                            fontFamily: 'Plus Jakarta Sans Bold',
+                            color: Color.fromRGBO(5, 34, 131, 1)),
+                      ),
                     ],
                   ),
                 ),
@@ -176,7 +198,8 @@ final List<Map<String, String>> products = [
                   runSpacing: 8.0, // Vertical space between rows
                   children: List.generate(products.length, (index) {
                     return SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.45, // Adjust the width for 2 items per row
+                      width: MediaQuery.of(context).size.width *
+                          0.45, // Adjust the width for 2 items per row
                       child: CardProduk(
                         imagePath: products[index]['imagePath']!,
                         label: products[index]['label']!,
@@ -204,8 +227,8 @@ final List<Map<String, String>> products = [
                 //     },
                 //   ),
                 // ),
-                  ],
-                ),
+              ],
+            ),
           ),
         ),
       ),
