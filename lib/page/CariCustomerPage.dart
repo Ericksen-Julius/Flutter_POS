@@ -70,6 +70,9 @@ class CariCustomerPageState extends State<CariCustomerPage> {
       ),
       body: SingleChildScrollView(
         child: Container(
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height,
+          ),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,

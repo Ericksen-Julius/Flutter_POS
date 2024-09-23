@@ -1,10 +1,16 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 
 class CardProduk extends StatelessWidget {
   final String imagePath;
   final String label;
   final String harga;
-  const CardProduk({super.key, required this.imagePath, required this.label, required this.harga});
+  const CardProduk(
+      {super.key,
+      required this.imagePath,
+      required this.label,
+      required this.harga});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +28,7 @@ class CardProduk extends StatelessWidget {
               child: Image.asset(
                 imagePath,
                 fit: BoxFit.cover,
-                width: 100.0,  // Adjust size as needed
+                width: 100.0, // Adjust size as needed
                 height: 100.0,
               ),
             ),
@@ -42,10 +48,9 @@ class CardProduk extends StatelessWidget {
         Text(
           harga,
           style: TextStyle(
-            fontSize: 14.0,
-            fontFamily: 'Plus Jakarta Sans',
-            color: Color.fromRGBO(226, 62, 95, 1)
-          ),
+              fontSize: 14.0,
+              fontFamily: 'Plus Jakarta Sans',
+              color: Color.fromRGBO(226, 62, 95, 1)),
         ),
       ],
     );

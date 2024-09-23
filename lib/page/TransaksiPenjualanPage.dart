@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:proyek_pos/component/ProductCardTransaksi.dart';
 import 'package:proyek_pos/component/TambahCustomerModal.dart';
 import 'package:proyek_pos/page/CariCustomerPage.dart';
+import 'package:proyek_pos/page/TambahProdukPage.dart';
 
 class TransaksiPenjualanPage extends StatefulWidget {
   const TransaksiPenjualanPage({super.key});
@@ -202,7 +203,10 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
                       TextButton(
                         onPressed: () {
                           // Aksi ketika tombol ditekan
-                          // Navigator.push(context, MaterialPageRoute(builder: (context) => ()));
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => TambahProdukPage()));
                         },
                         style: TextButton.styleFrom(
                           backgroundColor: Color(0xFFFFE4C5),
