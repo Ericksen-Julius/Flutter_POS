@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:proyek_pos/component/ProductCardTransaksi.dart';
+import 'package:proyek_pos/component/TambahCustomerModal.dart';
+import 'package:proyek_pos/page/CariCustomerPage.dart';
 
 class TransaksiPenjualanPage extends StatefulWidget {
   const TransaksiPenjualanPage({super.key});
@@ -122,7 +124,10 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
                         child: TextButton(
                           onPressed: () {
                             // Aksi ketika tombol ditekan
-                            // Navigator.push(context, MaterialPageRoute(builder: (context) => ()));
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => CariCustomerPage()));
                           },
                           style: TextButton.styleFrom(
                             backgroundColor: Color(0xFFE59A69),
@@ -145,8 +150,18 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
                         flex: 1,
                         child: TextButton(
                           onPressed: () {
-                            // Aksi ketika tombol ditekan
-                            // Navigator.push(context, MaterialPageRoute(builder: (context) => ()));
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(20),
+                                ),
+                              ),
+                              builder: (BuildContext context) {
+                                return TambahCustomerModal(); // Panggil komponen tanpa parameter
+                              },
+                            );
                           },
                           style: TextButton.styleFrom(
                             backgroundColor: Color(0xFFE59A69),

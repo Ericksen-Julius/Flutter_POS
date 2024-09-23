@@ -2,22 +2,19 @@
 
 import 'package:flutter/material.dart';
 
-class ProductCardTransaksi extends StatelessWidget {
-  final String imagePath;
-  final String productName;
-  final String productCode;
-  final String price;
-  // final VoidCallback onDelete;
+class CustomerProfile extends StatefulWidget {
+  final String nama;
+  final String noHp;
+  final String kota;
 
-  const ProductCardTransaksi({
-    super.key,
-    required this.imagePath,
-    required this.productName,
-    required this.productCode,
-    required this.price,
-    // required this.onDelete,
-  });
+  const CustomerProfile(
+      {super.key, required this.nama, required this.noHp, required this.kota});
 
+  @override
+  State<CustomerProfile> createState() => _CustomerProfileState();
+}
+
+class _CustomerProfileState extends State<CustomerProfile> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -44,13 +41,12 @@ class ProductCardTransaksi extends StatelessWidget {
           children: [
             Expanded(
               flex: 5,
-              child: Container(
+              child: SizedBox(
                 height: 100,
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage(imagePath),
-                    fit: BoxFit.cover,
-                  ),
+                child: Icon(
+                  Icons.account_circle, // Menggunakan ikon akun
+                  size: 100, // Sesuaikan ukuran ikon
+                  color: Colors.black, // Ganti dengan warna yang diinginkan
                 ),
               ),
             ),
@@ -61,7 +57,7 @@ class ProductCardTransaksi extends StatelessWidget {
                     CrossAxisAlignment.start, // Rata kiri untuk teks
                 children: [
                   Text(
-                    productName,
+                    widget.nama,
                     style: TextStyle(
                       fontSize: 18,
                       fontFamily: 'Plus Jakarta Sans Bold',
@@ -71,7 +67,7 @@ class ProductCardTransaksi extends StatelessWidget {
                   ),
                   SizedBox(height: 10),
                   Text(
-                    productCode,
+                    widget.noHp,
                     style: TextStyle(
                       fontSize: 14,
                       fontFamily: 'Plus Jakarta Sans Regular',
@@ -81,12 +77,12 @@ class ProductCardTransaksi extends StatelessWidget {
                   ),
                   SizedBox(height: 10),
                   Text(
-                    price,
+                    widget.kota,
                     style: TextStyle(
                       fontSize: 15,
                       fontFamily: 'Plus Jakarta Sans Bold',
                       fontWeight: FontWeight.w700,
-                      color: Color(0XFF006AFF),
+                      color: Color(0XFFE19767),
                     ),
                   ),
                 ],
@@ -96,7 +92,7 @@ class ProductCardTransaksi extends StatelessWidget {
               flex: 2,
               child: Container(
                 decoration: BoxDecoration(
-                  color: Color(0XFFFF9A9A), // Warna latar belakang
+                  color: Color(0XFFE19767), // Warna latar belakang
                   shape: BoxShape.rectangle, // Bentuk kotak
                   borderRadius: BorderRadius.circular(12.0),
                   boxShadow: [
@@ -110,8 +106,8 @@ class ProductCardTransaksi extends StatelessWidget {
                 child: IconButton(
                   onPressed: () {},
                   icon: Icon(
-                    Icons.delete,
-                    color: Color(0XFF851B1B),
+                    Icons.touch_app,
+                    color: Colors.white,
                   ),
                 ),
               ),
