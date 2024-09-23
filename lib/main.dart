@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:proyek_pos/page/BottomNavbar.dart';
+import 'package:proyek_pos/page/CheckoutPage.dart';
 import 'package:proyek_pos/page/DashboardPage.dart';
 import 'package:proyek_pos/page/Loginpage.dart';
 import 'package:proyek_pos/page/OnBoardingPage.dart';
@@ -21,7 +22,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: '/transaksipenjualan',
+      initialRoute: '/checkout',
       routes: {
         '/': (context) => BottomNavbar(),
         '/splash': (context) => SplashScreenPage(),
@@ -30,6 +31,7 @@ class MainApp extends StatelessWidget {
         '/riwayat': (context) => Riwayat(),
         '/profile': (context) => Profile(),
         '/transaksipenjualan': (context) => TransaksiPenjualanPage(),
+        '/checkout': (context) => CheckOutPage(),
       },
       // title: 'POS UBS',
       // // theme: new ThemeData(scaffoldBackgroundColor: Color.fromRGBO(0, 0, 0, 1)),
