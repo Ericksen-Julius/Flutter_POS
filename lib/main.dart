@@ -52,7 +52,7 @@ class MainApp extends StatelessWidget {
         '/riwayat': (context) => Riwayat(),
         '/profile': (context) => Profile(),
         '/transaksipenjualan': (context) => TransaksiPenjualanPage(),
-        '/checkout': (context) => CheckOutPage(),
+        // '/checkout': (context) => CheckOutPage(),
       },
       // title: 'POS UBS',
       // // theme: new ThemeData(scaffoldBackgroundColor: Color.fromRGBO(0, 0, 0, 1)),

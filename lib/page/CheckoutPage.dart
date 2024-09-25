@@ -1,17 +1,39 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:proyek_pos/component/CustomAppBar.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:proyek_pos/main.dart';
+import 'package:proyek_pos/model/CartItemModel.dart';
+import 'package:proyek_pos/page/DashboardPage.dart';
 
 class CheckOutPage extends StatefulWidget {
-  const CheckOutPage({super.key});
+  final int totalHarga;
+  const CheckOutPage({super.key, required this.totalHarga});
 
   @override
   State<CheckOutPage> createState() => _CheckOutPageState();
 }
 
 class _CheckOutPageState extends State<CheckOutPage> {
-  List<bool> isSelected = [false, false]; // Assuming 3 filters
+  List<bool> isSelected = [];
+  int charge = 10000;
+  int totalBiaya = 0;
+  int totalBayar = 0;
+  int kembali = 0;
+  List<dynamic> jenisBayar = [];
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    totalBiaya = widget.totalHarga + charge;
+    totalBayar = totalBiaya;
+    kembali = totalBayar - totalBiaya;
+    fetchJenisBayar();
+  }
+
   void _toggleMetodePembayaran(int index) {
     setState(() {
       if (!isSelected[index]) {
@@ -48,20 +70,20 @@ class _CheckOutPageState extends State<CheckOutPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              rowPembayaran('Total Harga', 'Rp. 194.700'),
+              rowPembayaran('Total Harga', formatNumber(widget.totalHarga)),
               SizedBox(height: 5),
-              rowPembayaran('Charge', 'Rp. 0'),
+              rowPembayaran('Charge', formatNumber(charge)),
               SizedBox(height: 10),
               Divider(
                 thickness: 1,
                 color: Color(0xFF3E3E3E),
               ),
               SizedBox(height: 10),
-              rowPembayaran('Total Biaya', 'Rp. 194.700'),
+              rowPembayaran('Total Biaya', formatNumber(totalBiaya)),
               SizedBox(height: 5),
-              rowPembayaran('Total Bayar', 'Rp. 194.700'),
+              rowPembayaran('Total Bayar', formatNumber(totalBayar)),
               SizedBox(height: 5),
-              rowPembayaran('Kembali', 'Rp. 0'),
+              rowPembayaran('Kembali', formatNumber(kembali)),
               SizedBox(height: 10),
               Text(
                 'Metode Pembayaran',
@@ -75,44 +97,44 @@ class _CheckOutPageState extends State<CheckOutPage> {
               SizedBox(height: 10),
               SizedBox(
                 width: double.infinity,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Wrap(
+                  spacing: 10.0, // Jarak horizontal antar tombol
+                  runSpacing: 10.0, // Jarak vertikal antar baris tombol
                   children: List.generate(
-                    2,
+                    jenisBayar.length, // jumlah total metode pembayaran
                     (index) {
-                      String label = ['Debit Card', 'Cash'][index];
-                      return Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 10),
-                          child: ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                _toggleMetodePembayaran(index);
-                              });
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: isSelected[index]
-                                  ? Color(0xFFE19767)
-                                  : Colors.white,
-                              padding: EdgeInsets.all(12.0),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                                side: BorderSide(
-                                  color: isSelected[index]
-                                      ? Colors.transparent
-                                      : Color(0xFF515151),
-                                ),
+                      String label = jenisBayar[index]['JENIS_BAYAR'];
+                      return SizedBox(
+                        width: MediaQuery.of(context).size.width / 3 -
+                            20, // Lebar tombol agar 3 per baris
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _toggleMetodePembayaran(index);
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isSelected[index]
+                                ? Color(0xFFE19767)
+                                : Colors.white,
+                            padding: EdgeInsets.all(12.0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                              side: BorderSide(
+                                color: isSelected[index]
+                                    ? Colors.transparent
+                                    : Color(0xFF515151),
                               ),
                             ),
-                            child: Text(
-                              label,
-                              style: TextStyle(
-                                color: isSelected[index]
-                                    ? Colors.white
-                                    : Color(0xFF515151),
-                                fontFamily: 'Plus Jakarta Sans Regular',
-                                fontWeight: FontWeight.w400,
-                              ),
+                          ),
+                          child: Text(
+                            label,
+                            style: TextStyle(
+                              color: isSelected[index]
+                                  ? Colors.white
+                                  : Color(0xFF515151),
+                              fontFamily: 'Plus Jakarta Sans Regular',
+                              fontWeight: FontWeight.w400,
                             ),
                           ),
                         ),
@@ -140,7 +162,9 @@ class _CheckOutPageState extends State<CheckOutPage> {
           ],
         ),
         child: ElevatedButton(
-          onPressed: () {},
+          onPressed: () {
+            _inputNota(context);
+          },
           style: ElevatedButton.styleFrom(
             backgroundColor: Color(0xFFE59A69),
             padding: EdgeInsets.symmetric(vertical: 12.0),
@@ -186,5 +210,155 @@ class _CheckOutPageState extends State<CheckOutPage> {
         ),
       ],
     );
+  }
+
+  String formatNumber(int harga) {
+    return NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    ).format(harga);
+  }
+
+  void fetchJenisBayar() async {
+    const url = "http://10.0.2.2:8082/proyek_pos/jenisbayar";
+    final uri = Uri.parse(url);
+    final response = await http.get(
+      uri,
+    );
+    final body = response.body;
+    final json = jsonDecode(body);
+    // print(json['data'][0]['KURS']);
+    setState(() {
+      jenisBayar = json['data'];
+      isSelected = List.generate(jenisBayar.length, (index) => false);
+      print(jenisBayar);
+      // print(kurs);
+    });
+  }
+
+  int findFirstTrueIndex(List<bool> isSelected) {
+    return isSelected.indexOf(true);
+  }
+
+  Future<void> _inputNota(
+    BuildContext context,
+  ) async {
+    String noHp = sp.getString('customer_noHp')!;
+    Map<String, dynamic> user = jsonDecode(sp.getString('admin')!);
+    String? cartJson = sp.getString('cartJson');
+    List<CartItem> items = [];
+    List<dynamic> cartList = jsonDecode(cartJson ?? '[]');
+
+    items = cartList.map((item) => CartItem.fromJson(item)).toList();
+    int firstTrueIndex = findFirstTrueIndex(isSelected);
+    if (firstTrueIndex == -1) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(
+              "Failed",
+              style: TextStyle(color: Colors.red),
+            ),
+            content: Text("Silahkan pilih metode pembayaran terlebih dahulu"),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text("OK"),
+              )
+            ],
+          );
+        },
+      );
+      return;
+    } else {
+      // print(jenisBayar[firstTrueIndex]['KODE']);
+    }
+    // print(widget.totalHarga);
+
+    // print(items[0].count);
+    // print(user['USER_ID']);
+    // print(noHp);
+    List<Map<String, dynamic>> barangBody = [];
+    items.forEach((item) {
+      barangBody.add({'barcode': item.produk.barcodeID, 'count': item.count});
+    });
+    print(barangBody);
+    const url = "http://10.0.2.2:8082/proyek_pos/nota";
+    final uri = Uri.parse(url);
+    final response = await http.post(
+      uri,
+      headers: {
+        'Content-type': 'application/json',
+      },
+      body: json.encode({
+        "no_hp": noHp,
+        "user_input": user['USER_ID'],
+        "barang": barangBody,
+        "kode_bayar": jenisBayar[firstTrueIndex]['KODE'],
+        "nominal": widget.totalHarga
+      }),
+    );
+    print(response.statusCode);
+    if (response.statusCode == 200) {
+      final body = response.body;
+      final jsonBody = jsonDecode(body);
+      if (jsonBody['success']) {
+        sp.remove('cartJson');
+        sp.remove('customer_noHp');
+        sp.remove('customer_nama');
+
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => Dashboardpage()));
+      } else {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(
+                "Failed",
+                style: TextStyle(color: Colors.red),
+              ),
+              content: Text(jsonBody['message'] ??
+                  'Maaf ada kesalahan,mohon tunggu sebentar'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text("OK"),
+                )
+              ],
+            );
+          },
+        );
+        return;
+      }
+    } else {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(
+              "Failed",
+              style: TextStyle(color: Colors.red),
+            ),
+            content: Text('Maaf ada kesalahan,mohon tunggu sebentar'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text("OK"),
+              )
+            ],
+          );
+        },
+      );
+      return;
+    }
   }
 }

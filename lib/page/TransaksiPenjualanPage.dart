@@ -9,6 +9,7 @@ import 'package:proyek_pos/component/TambahCustomerModal.dart';
 import 'package:proyek_pos/main.dart';
 import 'package:proyek_pos/model/CartItemModel.dart';
 import 'package:proyek_pos/page/CariCustomerPage.dart';
+import 'package:proyek_pos/page/CheckoutPage.dart';
 import 'package:proyek_pos/page/TambahProdukPage.dart';
 
 import 'package:http/http.dart' as http;
@@ -89,7 +90,7 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
     super.initState();
     fetchKurs();
     String? cart = sp.getString('cartJson');
-    print(cart);
+    // print(cart);
     List<dynamic> temporary = jsonDecode(cart ?? '[]');
     _cart = temporary.map((item) => CartItem.fromJson(item)).toList();
     _namaCustomerController.text = sp.getString('customer_nama') ?? '';
@@ -473,7 +474,12 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
             ),
             TextButton(
               onPressed: () {
-                // Aksi ketika tombol ditekan
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CheckOutPage(totalHarga: total),
+                  ),
+                );
               },
               style: TextButton.styleFrom(
                 backgroundColor: Color(0xFFE19767),
