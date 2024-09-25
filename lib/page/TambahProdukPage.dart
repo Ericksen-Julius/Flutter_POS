@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:proyek_pos/component/ProdukBody.dart';
+import 'package:proyek_pos/model/CustomerModel.dart';
 
 class TambahProdukPage extends StatefulWidget {
   const TambahProdukPage({super.key});
@@ -11,6 +12,7 @@ class TambahProdukPage extends StatefulWidget {
 }
 
 class _TambahProdukPageState extends State<TambahProdukPage> {
+  // Customer? customer;
   @override
   Widget build(BuildContext context) {
     return Scaffold(

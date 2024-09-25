@@ -2,7 +2,6 @@
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:proyek_pos/component/ProdukCard.dart';
@@ -302,8 +301,11 @@ class _ProdukBodyState extends State<ProdukBody> {
                 imagePath:
                     'http://10.0.2.2:8082/proyek_pos/uploads/${filteredProduk[index].foto}',
                 label: filteredProduk[index].nama!,
-                harga:
-                    (int.parse(filteredProduk[index].berat!) * kurs).toString(),
+                berat: int.parse(filteredProduk[index].berat!),
+                kurs: kurs,
+                kategori: filteredProduk[index].kategori!,
+                barcodeID: filteredProduk[index].barcodeID!,
+                // (int.parse(filteredProduk[index].berat!) * kurs).toString(),
               ),
             );
           },

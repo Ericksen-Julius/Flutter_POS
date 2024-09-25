@@ -1,10 +1,17 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, sized_box_for_whitespace
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:proyek_pos/component/ProductCardTransaksi.dart';
 import 'package:proyek_pos/component/TambahCustomerModal.dart';
+import 'package:proyek_pos/main.dart';
+import 'package:proyek_pos/model/CartItemModel.dart';
 import 'package:proyek_pos/page/CariCustomerPage.dart';
 import 'package:proyek_pos/page/TambahProdukPage.dart';
+
+import 'package:http/http.dart' as http;
 
 class TransaksiPenjualanPage extends StatefulWidget {
   const TransaksiPenjualanPage({super.key});
@@ -14,17 +21,78 @@ class TransaksiPenjualanPage extends StatefulWidget {
 }
 
 class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
+  bool itemClicked = false;
+  int? itemPrice;
+  int? count;
   final TextEditingController _namaCustomerController = TextEditingController();
   final TextEditingController _jumlahController = TextEditingController();
   final TextEditingController _totalHargaController = TextEditingController();
+  final TextEditingController _totalHargaItemsController =
+      TextEditingController();
+
+  List<CartItem> _cart = [];
   bool _isSwitched = false;
+  var kurs = 0;
+  int total = 0;
+  int totalHarga = 0;
+
+  void _updateValues(bool clicked, int price, int count) {
+    setState(() {
+      itemClicked = clicked;
+      itemPrice = price;
+      count = count;
+
+      _jumlahController.text = count.toString();
+      if (itemClicked == true) {
+        _totalHargaItemsController.text = NumberFormat.currency(
+          locale: 'id_ID',
+          symbol: 'Rp ',
+          decimalDigits: 0,
+        ).format(count * (itemPrice ?? 0));
+        _jumlahController.text = count.toString();
+      }
+      // Simulate re-running init logic
+      // print("Values updated: clicked = $itemClicked, price = $itemPrice");
+    });
+  }
+
+  Future<void> _deleteItem(String productCode) async {
+    String? cartJson = sp.getString('cartJson');
+    List<CartItem> items = [];
+    List<dynamic> cartList = jsonDecode(cartJson ?? '[]');
+
+    items = cartList.map((item) => CartItem.fromJson(item)).toList();
+
+    items.removeWhere((item) => item.produk.barcodeID == productCode);
+
+    String updatedCartJson =
+        jsonEncode(items.map((item) => item.toJson()).toList());
+    await sp.setString('cartJson', updatedCartJson);
+    setState(() {
+      _cart = items;
+      total = CartItem.calculateTotalPrice(_cart, kurs);
+
+      String formattedTotal = NumberFormat.currency(
+        locale: 'id_ID',
+        symbol: 'Rp ',
+        decimalDigits: 0,
+      ).format(total);
+      _totalHargaController.text = formattedTotal;
+    });
+  }
 
   @override
   void initState() {
+    // sp.remove('cartJson');
+
     // TODO: implement initState
     super.initState();
-    _totalHargaController.text = 'Rp. 194.700';
-    _jumlahController.text = '1';
+    fetchKurs();
+    String? cart = sp.getString('cartJson');
+    print(cart);
+    List<dynamic> temporary = jsonDecode(cart ?? '[]');
+    _cart = temporary.map((item) => CartItem.fromJson(item)).toList();
+    _namaCustomerController.text = sp.getString('customer_nama') ?? '';
   }
 
   @override
@@ -101,6 +169,7 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
                           style: TextStyle(color: Color(0xFFE59A69)),
                           decoration: InputDecoration(
                             hintText: "Nama Customer",
+                            enabled: false,
                             hintStyle: TextStyle(color: Color(0xFFE59A69)),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16.0),
@@ -109,7 +178,7 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
                               borderRadius: BorderRadius.circular(16.0),
                               borderSide: BorderSide(color: Color(0xFFE59A69)),
                             ),
-                            enabledBorder: OutlineInputBorder(
+                            disabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16.0),
                               borderSide: BorderSide(color: Color(0xFFE59A69)),
                             ),
@@ -230,15 +299,21 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
                   SizedBox(height: 20),
                   ListView.builder(
                     shrinkWrap: true,
-                    itemCount: 2,
+                    itemCount: _cart.length,
                     itemBuilder: (context, index) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 20.0),
                         child: ProductCardTransaksi(
-                            imagePath: 'assets/card_image.png',
-                            productName: 'LM Gift Classic',
-                            productCode: 'HB202323232323',
-                            price: 'Rp 194.700'),
+                          imagePath: _cart[index].produk.foto ?? '',
+                          productName: _cart[index].produk.nama ?? '',
+                          productCode: _cart[index].produk.barcodeID ?? '',
+                          price: formatNumber(
+                              int.parse(_cart[index].produk.berat ?? '0'),
+                              kurs),
+                          count: _cart[index].count,
+                          onValueChange: _updateValues,
+                          onItemDelete: _deleteItem,
+                        ),
                       );
                     },
                   ),
@@ -281,7 +356,7 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
                         flex: 2,
                         child: TextField(
                           controller: _jumlahController,
-                          enabled: false,
+                          enabled: itemClicked ? true : false,
                           style: TextStyle(color: Color(0xFF667085)),
                           decoration: InputDecoration(
                             // hintText: "",
@@ -307,7 +382,7 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
                       Expanded(
                         flex: 3,
                         child: TextField(
-                          controller: _totalHargaController,
+                          controller: _totalHargaItemsController,
                           style: TextStyle(color: Color(0xFF667085)),
                           textAlign: TextAlign.end,
                           decoration: InputDecoration(
@@ -356,7 +431,8 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
                     ],
                   ),
                   SizedBox(height: 10),
-                  summaryComponent()
+                  summaryComponent(),
+                  SizedBox(height: 10),
                 ],
               ),
             ),
@@ -375,7 +451,7 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
               text: TextSpan(
                 children: [
                   TextSpan(
-                    text: 'Rp. 194.700\n',
+                    text: '${_totalHargaController.text}\n',
                     style: TextStyle(
                       fontSize: 18, // Gaya untuk "Selamat datang di"
                       fontWeight: FontWeight.w700,
@@ -459,7 +535,7 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
             SizedBox(height: 10),
             ListView.builder(
               shrinkWrap: true,
-              itemCount: 1,
+              itemCount: _cart.length,
               itemBuilder: (context, index) {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 10.0),
@@ -467,7 +543,7 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'LM Gift Classic 0,1 gr',
+                        _cart[index].produk.nama!,
                         style: TextStyle(
                           color: Color(0xFF8E8E8E),
                           fontSize: 16,
@@ -476,7 +552,8 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
                         ),
                       ),
                       Text(
-                        'Rp. 194.700',
+                        formatNumber(
+                            int.parse(_cart[index].produk.berat!), kurs),
                         style: TextStyle(
                           color: Color(0xFF3E3E3E),
                           fontSize: 16,
@@ -508,7 +585,7 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
                     ),
                   ),
                   Text(
-                    'Rp. 200.000',
+                    _totalHargaController.text,
                     style: TextStyle(
                       color: Colors.black,
                       fontSize: 16,
@@ -523,5 +600,37 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
         ),
       ),
     );
+  }
+
+  String formatNumber(int berat, int kurs) {
+    return NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    ).format(berat * kurs);
+  }
+
+  void fetchKurs() async {
+    const url = "http://10.0.2.2:8082/proyek_pos/kurs";
+    final uri = Uri.parse(url);
+    final response = await http.get(
+      uri,
+    );
+    final body = response.body;
+    final json = jsonDecode(body);
+    // print(json['data'][0]['KURS']);
+    setState(() {
+      kurs = int.parse(json['data'][0]['KURS']);
+      total = CartItem.calculateTotalPrice(_cart, kurs);
+
+      // Format and print total price
+      String formattedTotal = NumberFormat.currency(
+        locale: 'id_ID',
+        symbol: 'Rp ',
+        decimalDigits: 0,
+      ).format(total);
+      _totalHargaController.text = formattedTotal;
+      // print(kurs);
+    });
   }
 }
