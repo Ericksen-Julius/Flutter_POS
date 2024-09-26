@@ -1,7 +1,10 @@
 // ignore_for_file: library_private_types_in_public_api, prefer_const_constructors
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:proyek_pos/helper/CustomerSynchronize.dart';
 import 'package:proyek_pos/main.dart';
 import 'dart:convert';
 
@@ -180,6 +183,14 @@ class TambahCustomerModalState extends State<TambahCustomerModal> {
     );
   }
 
+  // Future<void> updateLocalStorage(List<Customer> customers) async {
+  //   // Simpan daftar pelanggan yang diperbarui ke local storage
+  //   // Misalnya, menggunakan SharedPreferences
+  //   String customerList =
+  //       jsonEncode(customers.map((user) => user.toJson()).toList());
+  //   await sp.setString('temporaryAddCustomer', customerList);
+  // }
+
   Future<void> _inputCustomer(
     String nama,
     String noHp,
@@ -190,92 +201,67 @@ class TambahCustomerModalState extends State<TambahCustomerModal> {
     // print(isChecked);
     // return;
     String? customersLocal = sp.getString('customersLocal');
-    print(customersLocal);
+    List<Customer> temporaryAddCustomer = [];
+
+    // print(customersLocal);
     List<Customer> customers = [];
-    if (customersLocal != null) {
-      List<dynamic> customerList = jsonDecode(customersLocal);
-      customers = customerList.map((item) => Customer.fromJson(item)).toList();
-      bool customerExist = customers.any((customer) => customer.noHp == noHp);
-      if (!customerExist) {
-        customers
-            .add(Customer(noHp: noHp, nama: nama, alamat: alamat, kota: kota));
-        String updatedCustomersLocal =
-            jsonEncode(customers.map((user) => user.toJson()).toList());
-        await sp.setString('customersLocal', updatedCustomersLocal);
-        print("Customer added to SharedPreferences");
-      } else {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text(
-                "Failed",
-                style: TextStyle(color: Colors.red),
-              ),
-              content: Text("Customer already exists!"),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text("OK"),
-                )
-              ],
-            );
-          },
-        );
-      }
-    } else {
+    // if (customersLocal != null) {
+    List<dynamic> customerList = jsonDecode(customersLocal ?? '[]');
+    customers = customerList.map((item) => Customer.fromJson(item)).toList();
+    bool customerExist = customers.any((customer) => customer.noHp == noHp);
+    if (!customerExist) {
+      String? temp = sp.getString('temporaryAddCustomer');
+      List<dynamic> temporaryAddCustomerList = jsonDecode(temp ?? '[]');
+      temporaryAddCustomer = temporaryAddCustomerList
+          .map((item) => Customer.fromJson(item))
+          .toList();
+      temporaryAddCustomer
+          .add(Customer(noHp: noHp, nama: nama, alamat: alamat, kota: kota));
+      sp.setString('temporaryAddCustomer', jsonEncode(temporaryAddCustomer));
       customers
           .add(Customer(noHp: noHp, nama: nama, alamat: alamat, kota: kota));
-
       String updatedCustomersLocal =
           jsonEncode(customers.map((user) => user.toJson()).toList());
       await sp.setString('customersLocal', updatedCustomersLocal);
-      // print("Local Storage initialized!");
+      // print("Customer added to SharedPreferences");
+    } else {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(
+              "Failed",
+              style: TextStyle(color: Colors.red),
+            ),
+            content: Text("Customer already exists!"),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text("OK"),
+              )
+            ],
+          );
+        },
+      );
+      return;
     }
-    // print(sp.getString('customersLocal'));
-    // const url = "http://10.0.2.2:8082/proyek_pos/customer";
-    // final uri = Uri.parse(url);
-    // final response = await http.post(
-    //   uri,
-    //   headers: {
-    //     'Content-type': 'application/json',
-    //   },
-    //   body: json.encode(
-    //     {
-    //       'no_hp': noHp,
-    //       'nama': nama,
-    //       'alamat': alamat,
-    //       'kota': kota,
-    //     },
-    //   ),
-    // );
-    // print(response.statusCode);
-    // if (response.statusCode == 200) {
-    //   Navigator.pop(context);
     // } else {
-    //   // print(response.body);
-    //   // showDialog(
-    //   //   context: context,
-    //   //   builder: (BuildContext context) {
-    //   //     return AlertDialog(
-    //   //       title: Text(
-    //   //         "Failed",
-    //   //         style: TextStyle(color: Colors.red),
-    //   //       ),
-    //   //       content: Text("Email atau password salah!"),
-    //   //       actions: [
-    //   //         TextButton(
-    //   //           onPressed: () {
-    //   //             Navigator.pop(context);
-    //   //           },
-    //   //           child: Text("OK"),
-    //   //         )
-    //   //       ],
-    //   //     );
-    //   //   },
-    //   // );
+    //   customers
+    //       .add(Customer(noHp: noHp, nama: nama, alamat: alamat, kota: kota));
+
+    //   String updatedCustomersLocal =
+    //       jsonEncode(customers.map((user) => user.toJson()).toList());
+    //   await sp.setString('customersLocal', updatedCustomersLocal);
+    //   // print("Local Storage initialized!");
     // }
+    // print(sp.getString('customersLocal'));
+    print(sp.getString('temporaryAddCustomer'));
+
+    // return;
+    synchronizeAddCustomers();
+    Navigator.pop(context);
+    // print(temporaryAddCustomer);
   }
 }
