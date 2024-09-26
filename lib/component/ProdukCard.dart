@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -19,40 +20,75 @@ class NetworkImageWithLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16.0),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Image.network(
-            imageUrl,
+    return FutureBuilder<ImageProvider>(
+      future: _loadImage(imageUrl),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          // Show loading indicator while waiting for image to load
+          return Center(
+            child: Container(
+              width: double.infinity,
+              height: 130,
+              alignment: Alignment.center,
+              child: CircularProgressIndicator(),
+            ),
+          );
+        } else if (snapshot.hasError) {
+          // If there's an error, show the default image
+          return Image.asset(
+            'assets/default_image.jpg',
             fit: BoxFit.cover,
-            width: double.infinity, // Adjust size as needed
+            width: double.infinity,
             height: 130.0,
-            errorBuilder: (context, error, stackTrace) {
-              // Menampilkan gambar default jika gagal memuat
-              return Image.asset(
-                'assets/default_image.jpg',
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: 100.0,
-              );
-            },
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return Center(
-                child: CircularProgressIndicator(
-                  value: loadingProgress.expectedTotalBytes != null
-                      ? loadingProgress.cumulativeBytesLoaded /
-                          (loadingProgress.expectedTotalBytes ?? 1)
-                      : null,
-                ),
-              );
-            },
-          ),
-        ],
+          );
+        } else if (snapshot.hasData) {
+          // If the image is loaded successfully, display it
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(16.0),
+            child: Image(
+              image: snapshot.data!,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: 130.0,
+            ),
+          );
+        } else {
+          // Fallback in case none of the above states apply
+          return Container(); // Return an empty container
+        }
+      },
+    );
+  }
+
+  Future<ImageProvider> _loadImage(String url) async {
+    // Create a completer to handle the async loading
+    final completer = Completer<ImageProvider>();
+
+    // Create a NetworkImage
+    final networkImage = NetworkImage(url);
+
+    // Add a listener for the image loading
+    final imageStream = networkImage.resolve(ImageConfiguration());
+
+    // Listen to the stream
+    imageStream.addListener(
+      ImageStreamListener(
+        (ImageInfo imageInfo, bool sync) {
+          // If image is loaded successfully, complete the future with the image
+          completer.complete(networkImage);
+        },
+        onError: (dynamic exception, StackTrace? stackTrace) {
+          // If there is an error, complete with a default asset image
+          completer.complete(AssetImage('assets/default_image.jpg'));
+        },
       ),
     );
+
+    // Return the future from the completer
+    return completer.future.timeout(Duration(seconds: 10), onTimeout: () {
+      // If it times out, return the default asset image
+      return AssetImage('assets/default_image.jpg');
+    });
   }
 }
 
@@ -178,6 +214,6 @@ class ProdukCard extends StatelessWidget {
 
     await sp.setString('cartJson', updatedCartJson);
 
-    print(sp.getString('cartJson'));
+    // print(sp.getString('cartJson'));
   }
 }

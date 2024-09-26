@@ -1,10 +1,12 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
 import 'package:proyek_pos/component/ProdukCard.dart';
+import 'package:proyek_pos/main.dart';
 import 'package:proyek_pos/model/ProdukModel.dart';
 
 class ProdukBody extends StatefulWidget {
@@ -27,7 +29,7 @@ class _ProdukBodyState extends State<ProdukBody> {
     // TODO: implement initState
     super.initState();
     fetchData();
-    fetchKurs();
+    kurs = sp.getInt('kursLocal') ?? 0;
     _searchController.addListener(_filterProduk);
     isSelected[0] = true;
   }
@@ -67,7 +69,7 @@ class _ProdukBodyState extends State<ProdukBody> {
 
   void _filterByCategory() {
     int firstTrueIndex = findFirstTrueIndex(isSelected);
-    List<String> category = ['Semua', 'LM', 'Emas'];
+    List<String> category = ['Semua', 'LM', 'GD'];
 
     setState(() {
       if (firstTrueIndex != -1) {
@@ -289,12 +291,12 @@ class _ProdukBodyState extends State<ProdukBody> {
           child: GridView.builder(
             shrinkWrap: true,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2, // Two items per row
-              childAspectRatio: 0.85, // Adjust the height of each item
-              mainAxisSpacing: 10, // Spacing between rows
-              crossAxisSpacing: 10, // Spacing between columns
+              crossAxisCount: 2, // Dua item per baris
+              childAspectRatio: 0.85, // Atur tinggi setiap item
+              mainAxisSpacing: 10, // Jarak antar baris
+              crossAxisSpacing: 10, // Jarak antar kolom
             ),
-            itemCount: filteredProduk.length,
+            itemCount: filteredProduk.length, // Tentukan itemCount sekali saja
             itemBuilder: (context, index) {
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10.0),
@@ -302,62 +304,78 @@ class _ProdukBodyState extends State<ProdukBody> {
                   imagePath:
                       'http://10.0.2.2:8082/proyek_pos/uploads/${filteredProduk[index].foto}',
                   label: filteredProduk[index].nama!,
-                  harga:
-                      (int.parse(filteredProduk[index].berat!) * kurs).toString(),
+                  berat: int.parse(filteredProduk[index].berat!),
+                  kurs: kurs,
+                  kategori: filteredProduk[index].kategori!,
+                  barcodeID: filteredProduk[index].barcodeID!,
                 ),
               );
             },
           ),
-          itemCount: filteredProduk.length,
-          itemBuilder: (context, index) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10.0),
-              child: ProdukCard(
-                imagePath:
-                    'http://10.0.2.2:8082/proyek_pos/uploads/${filteredProduk[index].foto}',
-                label: filteredProduk[index].nama!,
-                berat: int.parse(filteredProduk[index].berat!),
-                kurs: kurs,
-                kategori: filteredProduk[index].kategori!,
-                barcodeID: filteredProduk[index].barcodeID!,
-                // (int.parse(filteredProduk[index].berat!) * kurs).toString(),
-              ),
-            );
-          },
-        ),
+        )
       ],
     );
   }
 
   void fetchData() async {
-    const url = "http://10.0.2.2:8082/proyek_pos/barang";
-    final uri = Uri.parse(url);
-    final response = await http.get(
-      uri,
-    );
-    final body = response.body;
-    final json = jsonDecode(body);
-    print(json['data'][0]['BERAT']);
-    setState(() {
-      produk =
-          (json['data'] as List).map((item) => Produk.fromJson(item)).toList();
-      filteredProduk = produk;
-      // print(produk);
-    });
+    // print("Mulai fetchData...");
+
+    String? produksLocal = sp.getString('produksLocal');
+    print(produksLocal);
+    try {
+      // print("Coba decode local data...");
+      List<dynamic> produkListLocal = jsonDecode(produksLocal ?? '[]');
+      setState(() {
+        produk = produkListLocal.map((item) => Produk.fromJson(item)).toList();
+        filteredProduk = produk;
+      });
+      // print("Local data berhasil dimuat.");
+    } catch (e) {
+      print('Error decoding JSON local: $e');
+    }
+
+    try {
+      // print("Mulai request ke server...");
+      const url = "http://10.0.2.2:8082/proyek_pos/barang";
+      final uri = Uri.parse(url);
+      final response = await http.get(
+        uri,
+      );
+      final body = response.body;
+      final json = jsonDecode(body);
+      // print("Status kode response: ${response.statusCode}");
+      if (response.statusCode == 200) {
+        setState(() {
+          produk = (json['data'] as List)
+              .map((item) => Produk.fromJson(item))
+              .toList();
+          filteredProduk = produk;
+          sp.setString('produksLocal', jsonEncode(json['data'] ?? []));
+          // print(filteredProduk);
+        });
+      } else {
+        print('Server error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("Error dalam request ke server: $e");
+      if (e is SocketException) {
+        print('Tidak dapat terhubung ke server.');
+      }
+    }
   }
 
-  void fetchKurs() async {
-    const url = "http://10.0.2.2:8082/proyek_pos/kurs";
-    final uri = Uri.parse(url);
-    final response = await http.get(
-      uri,
-    );
-    final body = response.body;
-    final json = jsonDecode(body);
-    // print(json['data'][0]['KURS']);
-    setState(() {
-      kurs = int.parse(json['data'][0]['KURS']);
-      // print(kurs);
-    });
-  }
+  // void fetchKurs() async {
+  //   const url = "http://10.0.2.2:8082/proyek_pos/kurs";
+  //   final uri = Uri.parse(url);
+  //   final response = await http.get(
+  //     uri,
+  //   );
+  //   final body = response.body;
+  //   final json = jsonDecode(body);
+  //   // print(json['data'][0]['KURS']);
+  //   setState(() {
+  //     kurs = int.parse(json['data'][0]['KURS']);
+  //     // print(kurs);
+  //   });
+  // }
 }

@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:proyek_pos/component/ProdukBody.dart';
-import 'package:proyek_pos/model/CustomerModel.dart';
 
 class TambahProdukPage extends StatefulWidget {
   const TambahProdukPage({super.key});
