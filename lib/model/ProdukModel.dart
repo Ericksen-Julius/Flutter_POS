@@ -24,4 +24,18 @@ class Produk {
     data['FOTO'] = foto;
     return data;
   }
+
+  int calculatePrice(int kurs) {
+    return (int.parse(berat!)) * kurs;
+  }
+
+  static int calculateTotalPrice(List<Produk> products, int kurs) {
+    int totalPrice = 0;
+
+    for (var product in products) {
+      totalPrice += product.calculatePrice(kurs);
+    }
+
+    return totalPrice;
+  }
 }

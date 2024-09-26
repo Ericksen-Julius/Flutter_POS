@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:nb_utils/nb_utils.dart';
 import 'package:proyek_pos/page/BottomNavbar.dart';
 import 'package:proyek_pos/page/CheckoutPage.dart';
 import 'package:proyek_pos/page/DashboardPage.dart';
@@ -11,8 +12,27 @@ import 'package:proyek_pos/page/Riwayat.dart';
 import 'package:proyek_pos/page/SplashScreen.dart';
 import 'package:proyek_pos/page/TransaksiPenjualanPage.dart';
 
-void main() {
+late SharedPreferences sp;
+
+Future main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeSharedPreferences();
+  // await Firebase.initializeApp(
+  //   name: "",
+  //   options: DefaultFirebaseOptions.currentPlatform,
+  // );
+  // await initFCM();
+  // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  // print(" FCMToken: $fcmToken");
   runApp(const MainApp());
+}
+
+Future<void> initializeSharedPreferences() async {
+  try {
+    sp = await SharedPreferences.getInstance();
+  } catch (e) {
+    print('Error initializing SharedPreferences: $e');
+  }
 }
 
 class MainApp extends StatelessWidget {
@@ -28,10 +48,11 @@ class MainApp extends StatelessWidget {
         '/splash': (context) => SplashScreenPage(),
         '/onboarding': (context) => Onboardingpage(),
         '/dashboard': (context) => Dashboardpage(),
+        '/login': (context) => LoginPage(),
         '/riwayat': (context) => Riwayat(),
         '/profile': (context) => Profile(),
         '/transaksipenjualan': (context) => TransaksiPenjualanPage(),
-        '/checkout': (context) => CheckOutPage(),
+        // '/checkout': (context) => CheckOutPage(),
       },
       // title: 'POS UBS',
       // // theme: new ThemeData(scaffoldBackgroundColor: Color.fromRGBO(0, 0, 0, 1)),

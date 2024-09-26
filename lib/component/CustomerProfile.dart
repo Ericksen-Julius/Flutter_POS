@@ -1,6 +1,8 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
+import 'package:proyek_pos/main.dart';
+import 'package:proyek_pos/page/TransaksiPenjualanPage.dart';
 
 class CustomerProfile extends StatefulWidget {
   final String nama;
@@ -104,7 +106,9 @@ class _CustomerProfileState extends State<CustomerProfile> {
                   ],
                 ),
                 child: IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    _loadCustomerInfo();
+                  },
                   icon: Icon(
                     Icons.edit,
                     color: Colors.white,
@@ -116,5 +120,17 @@ class _CustomerProfileState extends State<CustomerProfile> {
         ),
       ),
     );
+  }
+
+  Future<void> _loadCustomerInfo() async {
+    sp.setString('customer_nama', widget.nama);
+    sp.setString('customer_noHp', widget.noHp);
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TransaksiPenjualanPage(),
+      ),
+    );
+    // Use the retrieved values as needed
   }
 }
