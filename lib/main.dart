@@ -22,7 +22,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: '/checkout',
+      initialRoute: '/dashboard',
       routes: {
         '/': (context) => BottomNavbar(),
         '/splash': (context) => SplashScreenPage(),

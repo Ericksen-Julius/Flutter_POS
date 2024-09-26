@@ -1,18 +1,22 @@
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+
 import 'package:flutter/material.dart';
 import 'package:proyek_pos/component/CustomerProfile.dart';
 import 'package:http/http.dart' as http;
+import 'package:proyek_pos/component/MasterCustomerProfile.dart';
+import 'package:proyek_pos/component/TambahCustomerModal.dart';
 import 'dart:convert';
 
 import 'package:proyek_pos/model/CustomerModel.dart';
 
-class CariCustomerPage extends StatefulWidget {
-  const CariCustomerPage({super.key});
+class MasterCustomerPage extends StatefulWidget {
+  const MasterCustomerPage({super.key});
 
   @override
-  State<CariCustomerPage> createState() => CariCustomerPageState();
+  State<MasterCustomerPage> createState() => MasterCustomerPageState();
 }
 
-class CariCustomerPageState extends State<CariCustomerPage> {
+class MasterCustomerPageState extends State<MasterCustomerPage> {
   final TextEditingController _searchController = TextEditingController();
 
   List<Customer> customers = [];
@@ -20,6 +24,7 @@ class CariCustomerPageState extends State<CariCustomerPage> {
 
   @override
   void initState() {
+    // TODO: implement initState
     super.initState();
     fetchData();
     _searchController.addListener(_filterCustomers);
@@ -44,41 +49,52 @@ class CariCustomerPageState extends State<CariCustomerPage> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Color.fromRGBO(254, 253, 248, 1),
-        title: Text(
-          'Cari Customer',
-          style: TextStyle(
-            fontSize: 20,
-            color: Color.fromRGBO(75, 16, 16, 1),
-            fontFamily: 'Plus Jakarta Sans Bold',
-            fontWeight: FontWeight.w700,
-          ),
+ @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      backgroundColor: Color.fromRGBO(254, 253, 248, 1),
+      title: Text(
+        'Master Customer',
+        style: TextStyle(
+          fontSize: 20,
+          color: Color.fromRGBO(75, 16, 16, 1),
+          fontFamily: 'Plus Jakarta Sans Bold',
+          fontWeight: FontWeight.w700,
         ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: Icon(Icons.settings),
-          )
-        ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFFCF3EC), // #FCF3EC
-              Color(0xFFFFFFFF), // #FFFFFF
-            ],
-            stops: [0.0004, 0.405],
-          ),
+      actions: [
+        IconButton(
+          onPressed: () {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              builder: (context) => TambahCustomerModal(),
+            );
+          },
+          icon: Icon(Icons.person_add_alt_1_rounded),
         ),
+      ],
+    ),
+    body: Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFFCF3EC), // #FCF3EC
+            Color(0xFFFFFFFF), // #FFFFFF
+          ],
+          stops: [0.0004, 0.405],
+        ),
+      ),
+      child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             TextField(
               controller: _searchController,
@@ -107,17 +123,17 @@ class CariCustomerPageState extends State<CariCustomerPage> {
                 fillColor: Color(0xFFFEFCFB),
               ),
             ),
-            SizedBox(height: 20),
-            // Expanded widget to allow the ListView.builder to take up available space
+            SizedBox(height: 20), // Adds some space between search and list
             Expanded(
               child: ListView.builder(
                 itemCount: filteredCustomers.length,
                 itemBuilder: (context, index) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 10.0),
-                    child: CustomerProfile(
+                    child: MasterCustomerProfile(
                       nama: filteredCustomers[index].nama!,
                       noHp: filteredCustomers[index].noHp!,
+                      alamat: filteredCustomers[index].alamat!,
                       kota: filteredCustomers[index].kota!,
                     ),
                   );
@@ -127,23 +143,26 @@ class CariCustomerPageState extends State<CariCustomerPage> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   void fetchData() async {
     const url = "http://10.0.2.2:8082/proyek_pos/customer";
     final uri = Uri.parse(url);
-    final response = await http.get(uri);
+    final response = await http.get(
+      uri,
+    );
     final body = response.body;
     final json = jsonDecode(body);
-
-  if (mounted){
+    // print(json['data']);
     setState(() {
       customers = (json['data'] as List)
           .map((item) => Customer.fromJson(item))
           .toList();
       filteredCustomers = customers;
+      // print(customers);
     });
-  }
   }
 }

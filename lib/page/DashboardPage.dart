@@ -2,8 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:proyek_pos/page/CardMenu.dart';
-import 'package:proyek_pos/page/CardProduk.dart';
+import 'package:proyek_pos/component/CardMenu.dart';
+import 'package:proyek_pos/component/CardProduk.dart';
+import 'package:proyek_pos/page/MasterCustomerPage.dart';
+import 'package:proyek_pos/page/MasterProdukPage.dart';
 import 'package:proyek_pos/page/OnBoardingPage.dart';
 import 'package:proyek_pos/page/TransaksiPenjualanPage.dart';
 
@@ -17,8 +19,8 @@ class Dashboardpage extends StatefulWidget {
 class _DashboardpageState extends State<Dashboardpage> {
   final List<Widget> _menuPages = [
     TransaksiPenjualanPage(),
-    TransaksiPenjualanPage(),
-    TransaksiPenjualanPage(),
+    MasterProdukPage(),
+    MasterCustomerPage(),
     TransaksiPenjualanPage(),
   ];
   final List<String> carouselImages = [
@@ -172,13 +174,25 @@ class _DashboardpageState extends State<Dashboardpage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: List.generate(menuImages.length, (index) {
-                    return CardMenu(
-                      imagePath: menuImages[index],
-                      label: menuLabels[index],
-                      page: _menuPages[index],
+                    return GestureDetector(
+                      onTap: () {
+                        // Navigate to the specific page for this card
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => _menuPages[index]),
+                        );
+                      },
+                      child: CardMenu(
+                        imagePath: menuImages[index],
+                        label: menuLabels[index],
+                        page: _menuPages[
+                            index], // Make sure _menuPages contains the correct pages
+                      ),
                     );
                   }),
                 ),
+
                 SizedBox(height: 8.0),
                 Padding(
                   padding: const EdgeInsets.all(8.0),

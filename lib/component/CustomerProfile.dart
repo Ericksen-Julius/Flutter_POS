@@ -106,7 +106,7 @@ class _CustomerProfileState extends State<CustomerProfile> {
                 child: IconButton(
                   onPressed: () {},
                   icon: Icon(
-                    Icons.touch_app,
+                    Icons.edit,
                     color: Colors.white,
                   ),
                 ),

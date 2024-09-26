@@ -1,23 +1,21 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
-
 import 'package:flutter/material.dart';
 import 'package:proyek_pos/component/ProdukBody.dart';
 
-class TambahProdukPage extends StatefulWidget {
-  const TambahProdukPage({super.key});
+class MasterProdukPage extends StatefulWidget {
+  const MasterProdukPage({super.key});
 
   @override
-  State<TambahProdukPage> createState() => _TambahProdukPageState();
+  State<MasterProdukPage> createState() => _MasterProdukPageState();
 }
 
-class _TambahProdukPageState extends State<TambahProdukPage> {
+class _MasterProdukPageState extends State<MasterProdukPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color.fromRGBO(254, 253, 248, 1),
         title: Text(
-          'Tambah Produk',
+          'Master Produk',
           style: TextStyle(
             fontSize: 20,
             color: Color.fromRGBO(75, 16, 16, 1),
@@ -25,6 +23,11 @@ class _TambahProdukPageState extends State<TambahProdukPage> {
             fontWeight: FontWeight.w700,
           ),
         ),
+        actions: [
+          IconButton(
+              onPressed: () {}, // ini juga isi sendiri
+              icon: Icon(Icons.person_add_alt_1_rounded))
+        ],
       ),
       body: Container(
         constraints: BoxConstraints(
