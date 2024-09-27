@@ -1,5 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:proyek_pos/main.dart';
 import 'package:proyek_pos/model/UserModel.dart';
@@ -142,7 +144,7 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: () {
                       login(_noIndukController.text, _passwordController.text);
                       // Aksi ketika tombol ditekan
-                      // Navigator.push(
+                      // Navigator.pushReplacement(
                       //     context,
                       //     MaterialPageRoute(
                       //         builder: (context) => BottomNavbar()));
@@ -173,35 +175,41 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> login(id, password) async {
+    // print(sp.getString('admin'));
+    // print(sp.getString('usersLocal'));
+    // return;
     const url = "http://10.0.2.2:8082/proyek_pos/login";
     final uri = Uri.parse(url);
-    final response = await http.post(
-      uri,
-      headers: {
-        'Content-type': 'application/json',
-      },
-      body: json.encode(
-        {
-          "user_id": id,
-          "password": password,
+    try {
+      final response = await http
+          .post(
+        uri,
+        headers: {
+          'Content-type': 'application/json',
         },
-      ),
-    );
-    final body = response.body;
-    final jsonBody = jsonDecode(body);
-    // sp.remove('usersLocal');
-    sp.remove('admin');
-    if (response.statusCode == 200) {
-      if (jsonBody['success']) {
-        User admin = User.fromJson(jsonBody['user']);
-        // print('cek');
-        // print(User.fromJson(jsonBody['user']).name);
-        // return;
-        await sp.setString('admin', jsonEncode(admin.toJson()));
-        String? usersLocal = sp.getString('usersLocal');
-        List<User> users = [];
-        if (usersLocal != null) {
-          List<dynamic> userList = jsonDecode(usersLocal);
+        body: json.encode(
+          {
+            "user_id": id,
+            "password": password,
+          },
+        ),
+      )
+          .timeout(Duration(seconds: 5), onTimeout: () {
+        throw TimeoutException("Connection timeout");
+      });
+      final body = response.body;
+      final jsonBody = jsonDecode(body);
+      // sp.remove('usersLocal');
+      if (response.statusCode == 200) {
+        if (jsonBody['success']) {
+          User admin = User.fromJson(jsonBody['user']);
+          // print('cek');
+          // print(User.fromJson(jsonBody['user']).name);
+          // return;
+          await sp.setString('admin', jsonEncode(admin.toJson()));
+          String? usersLocal = sp.getString('usersLocal');
+          List<User> users = [];
+          List<dynamic> userList = jsonDecode(usersLocal ?? '[]');
           users = userList.map((item) => User.fromJson(item)).toList();
           bool userExists = users.any((user) => user.userId == admin.userId);
           if (!userExists) {
@@ -213,15 +221,99 @@ class _LoginPageState extends State<LoginPage> {
           } else {
             // print("User already exists in SharedPreferences");
           }
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (context) => BottomNavbar()));
+          // print(sp.getString('usersLocal'));
+          // print(sp.getString('admin'));
         } else {
-          users.add(admin);
-          String updatedUsersJson =
-              jsonEncode(users.map((user) => user.toJson()).toList());
-          await sp.setString('usersLocal', updatedUsersJson);
-          // print("Local Storage initialized!");
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text(
+                  "Failed",
+                  style: TextStyle(color: Colors.red),
+                ),
+                content: Text("User not found"),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text("OK"),
+                  )
+                ],
+              );
+            },
+          );
         }
-        print(sp.getString('usersLocal'));
-        print(sp.getString('admin'));
+      } else {
+        List<dynamic> usersList =
+            jsonDecode(sp.getString('usersLocal') ?? '[]');
+        List<User> users =
+            usersList.map((item) => User.fromJson(item)).toList();
+
+        User? foundUser;
+        try {
+          foundUser = users.firstWhere(
+            (user) => user.userId.toString() == id && user.password == password,
+          );
+        } catch (e) {
+          foundUser = null;
+        }
+        if (foundUser != null) {
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (context) => BottomNavbar()));
+          await sp.setString('admin', jsonEncode(foundUser.toJson()));
+
+          // print("User found: ${foundUser.name}");
+          // Lakukan aksi setelah menemukan user (misalnya login)
+        } else {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text(
+                  "Failed",
+                  style: TextStyle(color: Colors.red),
+                ),
+                content: Text("User not found or password is incorrect"),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text("OK"),
+                  )
+                ],
+              );
+            },
+          );
+          // Aksi jika user tidak ditemukan
+        }
+      }
+    } catch (e) {
+      print('error login: $e');
+      List<dynamic> usersList = jsonDecode(sp.getString('usersLocal') ?? '[]');
+      List<User> users = usersList.map((item) => User.fromJson(item)).toList();
+      // print(usersList);
+      // print(id);
+      // print(password);
+
+      User? foundUser;
+      try {
+        foundUser = users.firstWhere(
+          (user) => user.userId.toString() == id && user.password == password,
+        );
+      } catch (e) {
+        foundUser = null;
+      }
+      if (foundUser != null) {
+        await sp.setString('admin', jsonEncode(foundUser.toJson()));
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => BottomNavbar()));
+        // print("User found: ${foundUser.name}");
+        // Lakukan aksi setelah menemukan user (misalnya login)
       } else {
         showDialog(
           context: context,
@@ -231,7 +323,7 @@ class _LoginPageState extends State<LoginPage> {
                 "Failed",
                 style: TextStyle(color: Colors.red),
               ),
-              content: Text("User not found"),
+              content: Text("User not found or password is incorrect"),
               actions: [
                 TextButton(
                   onPressed: () {
@@ -243,28 +335,8 @@ class _LoginPageState extends State<LoginPage> {
             );
           },
         );
+        // Aksi jika user tidak ditemukan
       }
-    } else {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text(
-              "Failed",
-              style: TextStyle(color: Colors.red),
-            ),
-            content: Text("Maaf ada kesalahan, mohon tunggu sebentar"),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text("OK"),
-              )
-            ],
-          );
-        },
-      );
     }
   }
 }

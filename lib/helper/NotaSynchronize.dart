@@ -11,8 +11,8 @@ Future<void> saveUnsentNotaLocally(Map<String, dynamic> nota) async {
 }
 
 Future<void> synchronizeNota() async {
-  print('cek');
-  print(sp.getString('unsentNota'));
+  // print('cek');
+  // print(sp.getString('unsentNota'));
   const url = "http://10.0.2.2:8082/proyek_pos/nota";
   final uri = Uri.parse(url);
 

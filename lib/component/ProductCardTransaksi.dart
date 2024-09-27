@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:nb_utils/nb_utils.dart';
 
 class NetworkImageWithLoading extends StatelessWidget {
   final String imageUrl;
@@ -100,7 +101,7 @@ class ProductCardTransaksi extends StatelessWidget {
   final String productCode;
   final String price;
   final int count;
-  final Function(bool, int, int) onValueChange;
+  final Function(bool, int, int, String) onValueChange;
   final Function(String) onItemDelete;
   // final VoidCallback onDelete;
 
@@ -121,7 +122,8 @@ class ProductCardTransaksi extends StatelessWidget {
     String cleanedPrice = price.replaceAll(RegExp(r'[^\d]'), '');
     return GestureDetector(
       onTap: () {
-        onValueChange(true, int.parse(cleanedPrice), count);
+        onValueChange(
+            true, int.parse(cleanedPrice), count, productCode.toString());
       },
       child: Container(
         decoration: BoxDecoration(

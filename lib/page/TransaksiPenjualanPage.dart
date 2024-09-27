@@ -37,12 +37,14 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
   var kurs = 0;
   int total = 0;
   int totalHarga = 0;
+  String? chooseItem;
 
-  void _updateValues(bool clicked, int price, int count) {
+  void _updateValues(bool clicked, int price, int count, String barcodeID) {
     setState(() {
       itemClicked = clicked;
       itemPrice = price;
       count = count;
+      chooseItem = barcodeID;
 
       _jumlahController.text = count.toString();
       if (itemClicked == true) {
@@ -94,8 +96,62 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
     List<dynamic> temporary = jsonDecode(cart ?? '[]');
     _cart = temporary.map((item) => CartItem.fromJson(item)).toList();
     fetchKurs();
+    _jumlahController.addListener(() {
+      _updateTotalPriceBasedOnBarcode();
+    });
 
     _namaCustomerController.text = sp.getString('customer_nama') ?? '';
+  }
+
+  Future<void> _updateTotalPriceBasedOnBarcode() async {
+    if (_jumlahController.text.isNotEmpty) {
+      try {
+        int jumlah = int.parse(_jumlahController.text);
+        CartItem? foundItem;
+
+        // Mencari item dalam cart berdasarkan barcode
+        for (CartItem item in _cart) {
+          if (item.produk.barcodeID == chooseItem) {
+            foundItem = item;
+            break; // Keluar dari loop jika item ditemukan
+          }
+        }
+
+        if (foundItem != null) {
+          foundItem.count = jumlah;
+          print(itemPrice);
+          print(foundItem.count);
+          int totalHarga = itemPrice! * jumlah;
+          setState(() {
+            _totalHargaItemsController.text = NumberFormat.currency(
+              locale: 'id_ID',
+              symbol: 'Rp ',
+              decimalDigits: 0,
+            ).format(totalHarga);
+          });
+
+          String updatedCartJson =
+              jsonEncode(_cart.map((item) => item.toJson()).toList());
+          await sp.setString('cartJson', updatedCartJson);
+          total = CartItem.calculateTotalPrice(_cart, kurs);
+          String formattedTotal = NumberFormat.currency(
+            locale: 'id_ID',
+            symbol: 'Rp ',
+            decimalDigits: 0,
+          ).format(total);
+          _totalHargaController.text = formattedTotal;
+
+          // print('cek cart');
+          // print(sp.getString('cartJson'));
+        } else {
+          _totalHargaItemsController.text = '';
+        }
+      } catch (e) {
+        _totalHargaItemsController.text = '';
+      }
+    } else {
+      _totalHargaItemsController.text = '';
+    }
   }
 
   @override
@@ -561,7 +617,7 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        _cart[index].produk.nama!,
+                        '${_cart[index].produk.nama!} (${_cart[index].count})',
                         style: TextStyle(
                           color: Color(0xFF8E8E8E),
                           fontSize: 16,
@@ -629,7 +685,7 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
   }
 
   Future<void> fetchKurs() async {
-    print("Mulai fetchKurs...");
+    // print("Mulai fetchKurs...");
 
     kurs = sp.getInt('kursLocal') ?? 0;
     total = CartItem.calculateTotalPrice(_cart, kurs);
