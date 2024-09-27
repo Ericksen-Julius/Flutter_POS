@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:proyek_pos/component/CustomAppBar.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:proyek_pos/helper/NotaSynchronize.dart';
 import 'package:proyek_pos/main.dart';
 import 'package:proyek_pos/model/CartItemModel.dart';
 import 'package:proyek_pos/page/DashboardPage.dart';
@@ -221,30 +222,167 @@ class _CheckOutPageState extends State<CheckOutPage> {
   }
 
   void fetchJenisBayar() async {
-    const url = "http://10.0.2.2:8082/proyek_pos/jenisbayar";
-    final uri = Uri.parse(url);
-    final response = await http.get(
-      uri,
-    );
-    final body = response.body;
-    final json = jsonDecode(body);
-    // print(json['data'][0]['KURS']);
-    setState(() {
-      jenisBayar = json['data'];
-      isSelected = List.generate(jenisBayar.length, (index) => false);
-      print(jenisBayar);
-      // print(kurs);
-    });
+    String? jenisBayarLocal = sp.getString('jenisBayarLocal');
+
+    try {
+      // print(jenisBayarLocalList[0]['KODE']);
+      setState(() {
+        jenisBayar = jsonDecode(jenisBayarLocal ?? '[]');
+        isSelected = List.generate(jenisBayar.length, (index) => false);
+      });
+    } catch (e) {
+      print('Error decoding JSON local: $e');
+    }
+    try {
+      const url = "http://10.0.2.2:8082/proyek_pos/jenisbayar";
+      final uri = Uri.parse(url);
+      final response = await http.get(
+        uri,
+      );
+      final body = response.body;
+      final json = jsonDecode(body);
+      // print(json['data'][0]['KURS']);
+      setState(() {
+        jenisBayar = json['data'];
+        sp.setString('jenisBayarLocal', jsonEncode(jenisBayar));
+        isSelected = List.generate(jenisBayar.length, (index) => false);
+        print(sp.getString('jenisBayarLocal'));
+        // print(kurs);
+      });
+    } catch (e) {
+      print("Error dalam request ke server: $e");
+    }
   }
 
   int findFirstTrueIndex(List<bool> isSelected) {
     return isSelected.indexOf(true);
   }
 
-  Future<void> _inputNota(
-    BuildContext context,
-  ) async {
+  // Future<void> _inputNota(
+  //   BuildContext context,
+  // ) async {
+  //   String noHp = sp.getString('customer_noHp')!;
+  //   Map<String, dynamic> user = jsonDecode(sp.getString('admin')!);
+  //   String? cartJson = sp.getString('cartJson');
+  //   List<CartItem> items = [];
+  //   List<dynamic> cartList = jsonDecode(cartJson ?? '[]');
+
+  //   items = cartList.map((item) => CartItem.fromJson(item)).toList();
+  //   int firstTrueIndex = findFirstTrueIndex(isSelected);
+  //   if (firstTrueIndex == -1) {
+  //     showDialog(
+  //       context: context,
+  //       builder: (BuildContext context) {
+  //         return AlertDialog(
+  //           title: Text(
+  //             "Failed",
+  //             style: TextStyle(color: Colors.red),
+  //           ),
+  //           content: Text("Silahkan pilih metode pembayaran terlebih dahulu"),
+  //           actions: [
+  //             TextButton(
+  //               onPressed: () {
+  //                 Navigator.pop(context);
+  //               },
+  //               child: Text("OK"),
+  //             )
+  //           ],
+  //         );
+  //       },
+  //     );
+  //     return;
+  //   } else {
+  //     // print(jenisBayar[firstTrueIndex]['KODE']);
+  //   }
+  //   // print(widget.totalHarga);
+
+  //   // print(items[0].count);
+  //   // print(user['USER_ID']);
+  //   // print(noHp);
+  //   List<Map<String, dynamic>> barangBody = [];
+  //   items.forEach((item) {
+  //     barangBody.add({'barcode': item.produk.barcodeID, 'count': item.count});
+  //   });
+  //   print(barangBody);
+  //   const url = "http://10.0.2.2:8082/proyek_pos/nota";
+  //   final uri = Uri.parse(url);
+  //   final response = await http.post(
+  //     uri,
+  //     headers: {
+  //       'Content-type': 'application/json',
+  //     },
+  //     body: json.encode({
+  //       "no_hp": noHp,
+  //       "user_input": user['USER_ID'],
+  //       "barang": barangBody,
+  //       "kode_bayar": jenisBayar[firstTrueIndex]['KODE'],
+  //       "nominal": widget.totalHarga
+  //     }),
+  //   );
+  //   print(response.statusCode);
+  //   if (response.statusCode == 200) {
+  //     final body = response.body;
+  //     final jsonBody = jsonDecode(body);
+  //     if (jsonBody['success']) {
+  //       sp.remove('cartJson');
+  //       sp.remove('customer_noHp');
+  //       sp.remove('customer_nama');
+
+  //       Navigator.pushReplacement(
+  //           context, MaterialPageRoute(builder: (context) => Dashboardpage()));
+  //     } else {
+  //       showDialog(
+  //         context: context,
+  //         builder: (BuildContext context) {
+  //           return AlertDialog(
+  //             title: Text(
+  //               "Failed",
+  //               style: TextStyle(color: Colors.red),
+  //             ),
+  //             content: Text(jsonBody['message'] ??
+  //                 'Maaf ada kesalahan,mohon tunggu sebentar'),
+  //             actions: [
+  //               TextButton(
+  //                 onPressed: () {
+  //                   Navigator.pop(context);
+  //                 },
+  //                 child: Text("OK"),
+  //               )
+  //             ],
+  //           );
+  //         },
+  //       );
+  //       return;
+  //     }
+  //   } else {
+  //     showDialog(
+  //       context: context,
+  //       builder: (BuildContext context) {
+  //         return AlertDialog(
+  //           title: Text(
+  //             "Failed",
+  //             style: TextStyle(color: Colors.red),
+  //           ),
+  //           content: Text('Maaf ada kesalahan,mohon tunggu sebentar'),
+  //           actions: [
+  //             TextButton(
+  //               onPressed: () {
+  //                 Navigator.pop(context);
+  //               },
+  //               child: Text("OK"),
+  //             )
+  //           ],
+  //         );
+  //       },
+  //     );
+  //     return;
+  //   }
+  // }
+  Future<void> _inputNota(BuildContext context) async {
     String noHp = sp.getString('customer_noHp')!;
+    // print(noHp);
+    // return;
+
     Map<String, dynamic> user = jsonDecode(sp.getString('admin')!);
     String? cartJson = sp.getString('cartJson');
     List<CartItem> items = [];
@@ -274,91 +412,74 @@ class _CheckOutPageState extends State<CheckOutPage> {
         },
       );
       return;
-    } else {
-      // print(jenisBayar[firstTrueIndex]['KODE']);
     }
-    // print(widget.totalHarga);
 
-    // print(items[0].count);
-    // print(user['USER_ID']);
-    // print(noHp);
     List<Map<String, dynamic>> barangBody = [];
     items.forEach((item) {
       barangBody.add({'barcode': item.produk.barcodeID, 'count': item.count});
     });
-    print(barangBody);
-    const url = "http://10.0.2.2:8082/proyek_pos/nota";
-    final uri = Uri.parse(url);
-    final response = await http.post(
-      uri,
-      headers: {
-        'Content-type': 'application/json',
-      },
-      body: json.encode({
-        "no_hp": noHp,
-        "user_input": user['USER_ID'],
-        "barang": barangBody,
-        "kode_bayar": jenisBayar[firstTrueIndex]['KODE'],
-        "nominal": widget.totalHarga
-      }),
-    );
-    print(response.statusCode);
-    if (response.statusCode == 200) {
-      final body = response.body;
-      final jsonBody = jsonDecode(body);
-      if (jsonBody['success']) {
-        sp.remove('cartJson');
-        sp.remove('customer_noHp');
-        sp.remove('customer_nama');
 
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => Dashboardpage()));
-      } else {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text(
-                "Failed",
-                style: TextStyle(color: Colors.red),
-              ),
-              content: Text(jsonBody['message'] ??
-                  'Maaf ada kesalahan,mohon tunggu sebentar'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text("OK"),
-                )
-              ],
-            );
-          },
-        );
-        return;
-      }
-    } else {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text(
-              "Failed",
-              style: TextStyle(color: Colors.red),
-            ),
-            content: Text('Maaf ada kesalahan,mohon tunggu sebentar'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text("OK"),
-              )
-            ],
-          );
-        },
-      );
-      return;
-    }
+    Map<String, dynamic> notaData = {
+      "no_hp": noHp,
+      "user_input": user['USER_ID'],
+      "barang": barangBody,
+      "kode_bayar": jenisBayar[firstTrueIndex]['KODE'],
+      "nominal": widget.totalHarga,
+    };
+    print('test');
+    print(notaData);
+    sp.remove('cartJson');
+    sp.remove('customer_noHp');
+    sp.remove('customer_nama');
+
+    Future.delayed(Duration.zero, () {
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => Dashboardpage()));
+    });
+    await saveUnsentNotaLocally(notaData);
+    await synchronizeNota();
+
+    // const url = "http://10.0.2.2:8082/proyek_pos/nota";
+    // final uri = Uri.parse(url);
+    // try {
+    //   final response = await http.post(
+    //     uri,
+    //     headers: {'Content-type': 'application/json'},
+    //     body: json.encode(notaData),
+    //   );
+
+    //   if (response.statusCode == 200) {
+    //     final body = jsonDecode(response.body);
+    //     if (!body['success']) {
+    //       showDialog(
+    //         context: context,
+    //         builder: (BuildContext context) {
+    //           return AlertDialog(
+    //             title: Text(
+    //               "Failed",
+    //               style: TextStyle(color: Colors.red),
+    //             ),
+    //             content: Text(body['message'] ??
+    //                 'Maaf ada kesalahan, mohon tunggu sebentar'),
+    //             actions: [
+    //               TextButton(
+    //                 onPressed: () {
+    //                   Navigator.pop(context);
+    //                 },
+    //                 child: Text("OK"),
+    //               )
+    //             ],
+    //           );
+    //         },
+    //       );
+    //     }
+    //   } else {
+    //     // Save locally if not successful
+    //     await saveUnsentNotaLocally(notaData);
+    //   }
+    // } catch (e) {
+    //   // Save locally in case of any exception
+    //   await saveUnsentNotaLocally(notaData);
+    // }
   }
 }

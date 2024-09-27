@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:proyek_pos/helper/CustomerSynchronize.dart';
+import 'package:proyek_pos/helper/NotaSynchronize.dart';
 import 'package:proyek_pos/page/BottomNavbar.dart';
 import 'package:proyek_pos/page/CariCustomerPage.dart';
+import 'package:proyek_pos/page/CheckoutPage.dart';
 // import 'package:proyek_pos/page/CheckoutPage.dart';
 import 'package:proyek_pos/page/DashboardPage.dart';
 import 'package:proyek_pos/page/Loginpage.dart';
@@ -20,6 +22,7 @@ Timer? _timer;
 void startSynchronization() {
   _timer = Timer.periodic(Duration(minutes: 1), (timer) async {
     await synchronizeAddCustomers();
+    await synchronizeNota();
   });
 }
 
@@ -84,7 +87,9 @@ class _MainAppState extends State<MainApp> {
         '/profile': (context) => Profile(),
         '/transaksipenjualan': (context) => TransaksiPenjualanPage(),
         '/cariCustomer': (context) => CariCustomerPage(),
-        // '/checkout': (context) => CheckOutPage(),
+        '/checkout': (context) => CheckOutPage(
+              totalHarga: 20000,
+            ),
       },
       // title: 'POS UBS',
       // // theme: new ThemeData(scaffoldBackgroundColor: Color.fromRGBO(0, 0, 0, 1)),

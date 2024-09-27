@@ -17,6 +17,9 @@ Future<void> synchronizeAddCustomers() async {
   final uri = Uri.parse(url);
   // Ambil daftar pelanggan dari local storage
   String? temp = sp.getString('temporaryAddCustomer');
+  if (temp == null) {
+    return;
+  }
   List<dynamic> temporaryAddCustomerList;
   try {
     temporaryAddCustomerList = jsonDecode(temp ?? '[]');
