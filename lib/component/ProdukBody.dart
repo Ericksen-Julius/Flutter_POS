@@ -295,20 +295,6 @@ class _ProdukBodyState extends State<ProdukBody> {
               crossAxisSpacing: 10, // Spacing between columns
             ),
             itemCount: filteredProduk.length,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10.0),
-                child: ProdukCard(
-                  imagePath:
-                      'http://10.0.2.2:8082/proyek_pos/uploads/${filteredProduk[index].foto}',
-                  label: filteredProduk[index].nama!,
-                  harga:
-                      (int.parse(filteredProduk[index].berat!) * kurs).toString(),
-                ),
-              );
-            },
-          ),
-          itemCount: filteredProduk.length,
           itemBuilder: (context, index) {
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 10.0),
@@ -324,6 +310,7 @@ class _ProdukBodyState extends State<ProdukBody> {
               ),
             );
           },
+          ),
         ),
       ],
     );
