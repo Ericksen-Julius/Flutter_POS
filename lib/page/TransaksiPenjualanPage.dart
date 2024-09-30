@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, sized_box_for_whitespace
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -36,12 +37,14 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
   var kurs = 0;
   int total = 0;
   int totalHarga = 0;
+  String? chooseItem;
 
-  void _updateValues(bool clicked, int price, int count) {
+  void _updateValues(bool clicked, int price, int count, String barcodeID) {
     setState(() {
       itemClicked = clicked;
       itemPrice = price;
       count = count;
+      chooseItem = barcodeID;
 
       _jumlahController.text = count.toString();
       if (itemClicked == true) {
@@ -88,12 +91,67 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
 
     // TODO: implement initState
     super.initState();
-    fetchKurs();
     String? cart = sp.getString('cartJson');
-    // print(cart);
+    print(cart);
     List<dynamic> temporary = jsonDecode(cart ?? '[]');
     _cart = temporary.map((item) => CartItem.fromJson(item)).toList();
+    fetchKurs();
+    _jumlahController.addListener(() {
+      _updateTotalPriceBasedOnBarcode();
+    });
+
     _namaCustomerController.text = sp.getString('customer_nama') ?? '';
+  }
+
+  Future<void> _updateTotalPriceBasedOnBarcode() async {
+    if (_jumlahController.text.isNotEmpty) {
+      try {
+        int jumlah = int.parse(_jumlahController.text);
+        CartItem? foundItem;
+
+        // Mencari item dalam cart berdasarkan barcode
+        for (CartItem item in _cart) {
+          if (item.produk.barcodeID == chooseItem) {
+            foundItem = item;
+            break; // Keluar dari loop jika item ditemukan
+          }
+        }
+
+        if (foundItem != null) {
+          foundItem.count = jumlah;
+          print(itemPrice);
+          print(foundItem.count);
+          int totalHarga = itemPrice! * jumlah;
+          setState(() {
+            _totalHargaItemsController.text = NumberFormat.currency(
+              locale: 'id_ID',
+              symbol: 'Rp ',
+              decimalDigits: 0,
+            ).format(totalHarga);
+          });
+
+          String updatedCartJson =
+              jsonEncode(_cart.map((item) => item.toJson()).toList());
+          await sp.setString('cartJson', updatedCartJson);
+          total = CartItem.calculateTotalPrice(_cart, kurs);
+          String formattedTotal = NumberFormat.currency(
+            locale: 'id_ID',
+            symbol: 'Rp ',
+            decimalDigits: 0,
+          ).format(total);
+          _totalHargaController.text = formattedTotal;
+
+          // print('cek cart');
+          // print(sp.getString('cartJson'));
+        } else {
+          _totalHargaItemsController.text = '';
+        }
+      } catch (e) {
+        _totalHargaItemsController.text = '';
+      }
+    } else {
+      _totalHargaItemsController.text = '';
+    }
   }
 
   @override
@@ -474,12 +532,22 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
             ),
             TextButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CheckOutPage(totalHarga: total),
-                  ),
-                );
+                if (_cart.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('Keranjang masih kosong'),
+                  ));
+                } else if (_namaCustomerController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('Nama customer harus diisi'),
+                  ));
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CheckOutPage(totalHarga: total),
+                    ),
+                  );
+                }
               },
               style: TextButton.styleFrom(
                 backgroundColor: Color(0xFFE19767),
@@ -549,7 +617,7 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        _cart[index].produk.nama!,
+                        '${_cart[index].produk.nama!} (${_cart[index].count})',
                         style: TextStyle(
                           color: Color(0xFF8E8E8E),
                           fontSize: 16,
@@ -616,27 +684,47 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
     ).format(berat * kurs);
   }
 
-  void fetchKurs() async {
-    const url = "http://10.0.2.2:8082/proyek_pos/kurs";
-    final uri = Uri.parse(url);
-    final response = await http.get(
-      uri,
-    );
-    final body = response.body;
-    final json = jsonDecode(body);
-    // print(json['data'][0]['KURS']);
-    setState(() {
-      kurs = int.parse(json['data'][0]['KURS']);
-      total = CartItem.calculateTotalPrice(_cart, kurs);
+  Future<void> fetchKurs() async {
+    // print("Mulai fetchKurs...");
 
-      // Format and print total price
-      String formattedTotal = NumberFormat.currency(
-        locale: 'id_ID',
-        symbol: 'Rp ',
-        decimalDigits: 0,
-      ).format(total);
-      _totalHargaController.text = formattedTotal;
-      // print(kurs);
-    });
+    kurs = sp.getInt('kursLocal') ?? 0;
+    total = CartItem.calculateTotalPrice(_cart, kurs);
+    print(_cart);
+    String formattedTotal = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    ).format(total);
+    _totalHargaController.text = formattedTotal;
+    // print(kurs);
+    const url = "http://10.0.2.2:8082/proyek_pos/kurs";
+    try {
+      final uri = Uri.parse(url);
+      final response = await http.get(
+        uri,
+      );
+      final body = response.body;
+      final json = jsonDecode(body);
+      print("Status kode response: ${response.statusCode}");
+      setState(() {
+        kurs = int.parse(json['data'][0]['KURS']);
+        sp.setInt('kursLocal', kurs);
+        total = CartItem.calculateTotalPrice(_cart, kurs);
+
+        // Format and print total price
+        String formattedTotal = NumberFormat.currency(
+          locale: 'id_ID',
+          symbol: 'Rp ',
+          decimalDigits: 0,
+        ).format(total);
+        _totalHargaController.text = formattedTotal;
+        // print(kurs);
+      });
+    } catch (e) {
+      print("Error dalam request ke server: $e");
+      if (e is SocketException) {
+        print('Tidak dapat terhubung ke server.');
+      }
+    }
   }
 }

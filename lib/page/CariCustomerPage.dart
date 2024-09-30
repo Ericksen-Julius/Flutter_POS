@@ -1,6 +1,11 @@
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:proyek_pos/component/CustomerProfile.dart';
 import 'package:http/http.dart' as http;
+import 'package:proyek_pos/main.dart';
 import 'dart:convert';
 
 import 'package:proyek_pos/model/CustomerModel.dart';
@@ -130,20 +135,52 @@ class CariCustomerPageState extends State<CariCustomerPage> {
     );
   }
 
-  void fetchData() async {
-    const url = "http://10.0.2.2:8082/proyek_pos/customer";
-    final uri = Uri.parse(url);
-    final response = await http.get(uri);
-    final body = response.body;
-    final json = jsonDecode(body);
+  Future<void> fetchData() async {
+    // print("Mulai fetchData...");
 
-  if (mounted){
-    setState(() {
-      customers = (json['data'] as List)
-          .map((item) => Customer.fromJson(item))
-          .toList();
-      filteredCustomers = customers;
-    });
-  }
+    String? customerLocal = sp.getString('customersLocal');
+    try {
+      // print("Coba decode local data...");
+      List<dynamic> customerListLocal = jsonDecode(customerLocal ?? '[]');
+      setState(() {
+        customers =
+            customerListLocal.map((item) => Customer.fromJson(item)).toList();
+        filteredCustomers = customers;
+      });
+      // print("Local data berhasil dimuat.");
+    } catch (e) {
+      print('Error decoding JSON local: $e');
+    }
+
+    try {
+      // print("Mulai request ke server...");
+      const url = "http://10.0.2.2:8082/proyek_pos/customer";
+      final uri = Uri.parse(url);
+      final response = await http.get(uri);
+      // print("Status kode response: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        final body = response.body;
+        final json = jsonDecode(body);
+        // print("Data dari server: $json");
+
+        if (mounted) {
+          setState(() {
+            customers = (json['data'] as List)
+                .map((item) => Customer.fromJson(item))
+                .toList();
+            filteredCustomers = customers;
+            sp.setString('customersLocal', jsonEncode(json['data'] ?? []));
+          });
+        }
+      } else {
+        print('Server error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("Error dalam request ke server: $e");
+      if (e is SocketException) {
+        print('Tidak dapat terhubung ke server.');
+      }
+    }
   }
 }
