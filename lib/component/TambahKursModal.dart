@@ -166,145 +166,73 @@ class TambahKursModalState extends State<TambahKursModal> {
   }
 
   Future<void> _inputKurs(
-  String date,
-  String kurs,
-  BuildContext context,
-) async {
-  const url = "http://10.0.2.2:8082/proyek_pos/kurs"; // Your API endpoint
-  final uri = Uri.parse(url);
+    String date,
+    String kurs,
+    BuildContext context,
+  ) async {
+    const url = "http://10.0.2.2:8082/proyek_pos/kurs"; // Your API endpoint
+    final uri = Uri.parse(url);
 
-  try {
-    final response = await http.post(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({
-        'tanggal': date, // Today's date
-        'kurs': kurs, // Input kurs
-      }),
-    );
+    Map<String, dynamic> kursData = {
+      'tanggal': date, // Today's date
+      'kurs': kurs, // Input kurs
+    };
 
-    final body = jsonDecode(response.body);
-    print(body);
-    
-    if (response.statusCode == 200 && body['success']) {
-      // Show success message
-      Navigator.pop(context); // Close the modal
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Kurs added successfully!')),
-      );
-    } else {
-      // Handle failure
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Failed", style: TextStyle(color: Colors.red)),
-            content: Text("Failed to add kurs!"),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text("OK"),
-              ),
-            ],
-          );
-        },
-      );
-    }
-  } catch (e) {
-    // Handle any exceptions
-    print('Error during API request: $e');
+    await saveUnsentKursLocally(kursData);
+    await synchronizeKurs();
+    print(kursData);
+
+    // try {
+    //   final response = await http.post(
+    //     uri,
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: json.encode(kursData), // Send kurs data
+    //   );
+
+    //   final body = jsonDecode(response.body);
+    //   print(body);
+
+    //   if (response.statusCode == 200 && body['success']) {
+    //     // Show success message
+    //     Navigator.pop(context); // Close the modal
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       SnackBar(content: Text('Kurs added successfully!')),
+    //     );
+    //   } else {
+    //     // Handle failure
+    //     await saveUnsentKursLocally(kursData); // Save kurs data locally
+    //     _showAlertDialog(context, "Failed", "Failed to add kurs!"); // Show error dialog
+    //   }
+    // } catch (e) {
+    //   await saveUnsentKursLocally(kursData); // Save kurs data locally on exception
+    //   print('Error during API request: $e');
+    //   _showAlertDialog(context, "Error", "An error occurred while adding kurs!"); // Show error dialog
+    // }
+
+    // // Optional: Call synchronizeKurs if needed
+    // await synchronizeKurs();
+  }
+
+  void _showAlertDialog(BuildContext context, String title, String message) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Error", style: TextStyle(color: Colors.red)),
-          content: Text("An error occurred while adding kurs!"),
+          title: Text(title, style: TextStyle(color: Colors.red)),
+          content: Text(message),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
               child: Text("OK"),
-            )
-            ],
+            ),
+          ],
         );
       },
     );
   }
-}
-
-
-// ini belum paham wkwkwk
-//   Future<void> _inputKurs(
-//   String date,
-//   String kurs,
-//   BuildContext context,
-// ) async {
-//   // Change kursLocal to dynamic to handle different types
-//   dynamic kursLocal = sp.get('kursLocal'); 
-//   List<dynamic> kursList = [];
-
-//   // Check if kursLocal is an int or String
-//   if (kursLocal is String) {
-//     // Parse existing kurs data from shared preferences
-//     kursList = jsonDecode(kursLocal);
-//   } else if (kursLocal is int) {
-//     // If kursLocal is an int, you might want to handle this case.
-//     // Here we can assume it's not valid and return or log an error.
-//     print("kursLocal is an int: $kursLocal. Expected a String.");
-//     return; // or handle it according to your needs
-//   } else {
-//     // If kursLocal is null or of an unexpected type, initialize an empty list
-//     kursList = [];
-//   }
-
-//   // Check if kurs for today's date already exists
-//   bool kursExists = kursList.any((item) => item['tanggal'] == date);
-
-//   if (!kursExists) {
-//     // Add new kurs entry
-//     kursList.add({
-//       'tanggal': date,
-//       'kurs': kurs,
-//     });
-
-//     // Save the updated list back to shared preferences
-//     String updatedKursLocal = jsonEncode(kursList);
-//     await sp.setString('kursLocal', updatedKursLocal);
-
-//     // Close modal and show success message
-//     Navigator.pop(context);
-//   } else {
-//     // If kurs already exists for today's date, show an alert
-//     showDialog(
-//       context: context,
-//       builder: (BuildContext context) {
-//         return AlertDialog(
-//           title: Text(
-//             "Failed",
-//             style: TextStyle(color: Colors.red),
-//           ),
-//           content: Text("Kurs untuk hari ini sudah ada!"),
-//           actions: [
-//             TextButton(
-//               onPressed: () {
-//                 Navigator.pop(context);
-//               },
-//               child: Text("OK"),
-//             )
-//           ],
-//         );
-//       },
-//     );
-//   }
-  // synchronizeAddKurs(); // Call to synchronize kurs data
-
-  // // Optionally, handle success/failure of the database insert operation
-  // Navigator.pop(context);
-// }
 
 }

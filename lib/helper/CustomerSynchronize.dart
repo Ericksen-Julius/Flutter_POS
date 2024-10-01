@@ -60,3 +60,49 @@ Future<void> synchronizeAddCustomers() async {
     }
   }
 }
+
+Future<void> synchronizeDeleteCustomers() async {
+  const url = "http://10.0.2.2:8082/proyek_pos/customer";
+  final uri = Uri.parse(url);
+  
+  // Get the list of customers to delete from local storage
+  String? temp = sp.getString('temporaryDeleteCustomer');
+  if (temp == null) {
+    return; // If no customers to delete, exit the function
+  }
+  
+  List<dynamic> temporaryDeleteCustomerList;
+  try {
+    temporaryDeleteCustomerList = jsonDecode(temp ?? '[]');
+  } catch (e) {
+    print('Error decoding JSON: $e');
+    return; // Stop execution if there's an error decoding
+  }
+
+  List<Customer> temporaryDeleteCustomer =
+      temporaryDeleteCustomerList.map((item) => Customer.fromJson(item)).toList();
+
+  for (var customer in List.from(temporaryDeleteCustomer)) {
+    try {
+      final response = await http.delete(
+        uri,
+        headers: {
+          'Content-type': 'application/json',
+        },
+        body: json.encode({'no_hp': customer.noHp}), // Send customer no_hp to delete
+      );
+
+      final body = jsonDecode(response.body);
+      if (response.statusCode == 200 && body['success']) {
+        temporaryDeleteCustomer.remove(customer); // Remove from local list
+        await updateLocalStorage(temporaryDeleteCustomer); // Update local storage
+      } else {
+        print('Failed to delete customer: ${response.statusCode}'); // Handle unsuccessful response
+        break; // Stop the loop if there's an issue with the response
+      }
+    } catch (e) {
+      print("Error occurred: $e"); // Handle errors
+      break; // Stop the loop if there's an error
+    }
+  }
+}
