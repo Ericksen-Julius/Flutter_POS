@@ -287,6 +287,7 @@ class _ProdukBodyState extends State<ProdukBody> {
             ),
           ],
         ),
+        SizedBox(height: 10),
         Expanded(
           child: GridView.builder(
             shrinkWrap: true,
@@ -299,7 +300,7 @@ class _ProdukBodyState extends State<ProdukBody> {
             itemCount: filteredProduk.length, // Tentukan itemCount sekali saja
             itemBuilder: (context, index) {
               return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                padding: const EdgeInsets.symmetric(vertical: 5.0),
                 child: ProdukCard(
                   imagePath:
                       'http://10.0.2.2:8082/proyek_pos/uploads/${filteredProduk[index].foto}',

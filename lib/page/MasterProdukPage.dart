@@ -1,5 +1,8 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:proyek_pos/component/ProdukBody.dart';
+import 'package:proyek_pos/component/TambahProdukModal.dart';
 
 class MasterProdukPage extends StatefulWidget {
   const MasterProdukPage({super.key});
@@ -25,7 +28,17 @@ class _MasterProdukPageState extends State<MasterProdukPage> {
         ),
         actions: [
           IconButton(
-              onPressed: () {}, // ini juga isi sendiri
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  shape: RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  builder: (context) => TambahProdukModal(),
+                );
+              }, // ini juga isi sendiri
               icon: Icon(Icons.add_circle_outline))
         ],
       ),
@@ -37,6 +50,7 @@ class _MasterProdukPageState extends State<MasterProdukPage> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
+            // ignore: prefer_const_literals_to_create_immutables
             colors: [
               Color(0xFFFCF3EC),
               Color(0xFFFFFFFF),

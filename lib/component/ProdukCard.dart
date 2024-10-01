@@ -85,7 +85,7 @@ class NetworkImageWithLoading extends StatelessWidget {
     );
 
     // Return the future from the completer
-    return completer.future.timeout(Duration(seconds: 10), onTimeout: () {
+    return completer.future.timeout(Duration(seconds: 5), onTimeout: () {
       // If it times out, return the default asset image
       return AssetImage('assets/default_image.jpg');
     });
