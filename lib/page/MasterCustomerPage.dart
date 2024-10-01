@@ -7,6 +7,7 @@ import 'package:proyek_pos/component/CustomerProfile.dart';
 import 'package:http/http.dart' as http;
 import 'package:proyek_pos/component/MasterCustomerProfile.dart';
 import 'package:proyek_pos/component/TambahCustomerModal.dart';
+import 'package:proyek_pos/helper/CustomerSynchronize.dart';
 import 'package:proyek_pos/main.dart';
 import 'dart:convert';
 
@@ -31,6 +32,7 @@ class MasterCustomerPageState extends State<MasterCustomerPage> {
     super.initState();
     fetchData();
     _searchController.addListener(_filterCustomers);
+    // sp.remove('temporaryDeleteCustomer');
   }
 
   @override
@@ -52,105 +54,130 @@ class MasterCustomerPageState extends State<MasterCustomerPage> {
     });
   }
 
- @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      backgroundColor: Color.fromRGBO(254, 253, 248, 1),
-      title: Text(
-        'Master Customer',
-        style: TextStyle(
-          fontSize: 20,
-          color: Color.fromRGBO(75, 16, 16, 1),
-          fontFamily: 'Plus Jakarta Sans Bold',
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-      actions: [
-        IconButton(
-          onPressed: () {
-            showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              builder: (context) => TambahCustomerModal(),
-            );
-          },
-          icon: Icon(Icons.person_add_alt_1_rounded),
-        ),
-      ],
-    ),
-    body: Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFFFCF3EC), // #FCF3EC
-            Color(0xFFFFFFFF), // #FFFFFF
-          ],
-          stops: [0.0004, 0.405],
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            TextField(
-              controller: _searchController,
-              style: TextStyle(color: Color(0xFF667085)),
-              decoration: InputDecoration(
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: Color(0xFFE19767),
-                ),
-                hintText: 'Cari Customer',
-                hintStyle: TextStyle(
-                  color: Color(0xFFE19767),
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16.0),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16.0),
-                  borderSide: BorderSide(color: Color(0xFFE19767)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16.0),
-                  borderSide: BorderSide(color: Color(0xFFE19767)),
-                ),
-                filled: true,
-                fillColor: Color(0xFFFEFCFB),
-              ),
-            ),
-            SizedBox(height: 20), // Adds some space between search and list
-            Expanded(
-              child: ListView.builder(
-                itemCount: filteredCustomers.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10.0),
-                    child: MasterCustomerProfile(
-                      nama: filteredCustomers[index].nama!,
-                      noHp: filteredCustomers[index].noHp!,
-                      alamat: filteredCustomers[index].alamat!,
-                      kota: filteredCustomers[index].kota!,
-                      onDelete: fetchData,
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
+  Future<void> _deleteItem(String noHp) async {
+    setState(() {
+      customers.removeWhere((customer) => customer.noHp!.trim() == noHp);
+      filteredCustomers
+          .removeWhere((customer) => customer.noHp!.trim() == noHp);
+    });
 
+    String updatedCustomers =
+        jsonEncode(customers.map((item) => item.toJson()).toList());
+    await sp.setString('customersLocal', updatedCustomers);
+    Map<String, dynamic> requestData = {'no_hp': noHp};
+    await saveUnsentDeleteCustomersLocally(requestData);
+    await synchronizeDeleteCustomers();
+    // setState(() {
+    //   _cart = items;
+    //   total = CartItem.calculateTotalPrice(_cart, kurs);
+
+    //   String formattedTotal = NumberFormat.currency(
+    //     locale: 'id_ID',
+    //     symbol: 'Rp ',
+    //     decimalDigits: 0,
+    //   ).format(total);
+    //   _totalHargaController.text = formattedTotal;
+    // });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Color.fromRGBO(254, 253, 248, 1),
+        title: Text(
+          'Master Customer',
+          style: TextStyle(
+            fontSize: 20,
+            color: Color.fromRGBO(75, 16, 16, 1),
+            fontFamily: 'Plus Jakarta Sans Bold',
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                builder: (context) => TambahCustomerModal(),
+              );
+            },
+            icon: Icon(Icons.person_add_alt_1_rounded),
+          ),
+        ],
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFFCF3EC), // #FCF3EC
+              Color(0xFFFFFFFF), // #FFFFFF
+            ],
+            stops: [0.0004, 0.405],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              TextField(
+                controller: _searchController,
+                style: TextStyle(color: Color(0xFF667085)),
+                decoration: InputDecoration(
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: Color(0xFFE19767),
+                  ),
+                  hintText: 'Cari Customer',
+                  hintStyle: TextStyle(
+                    color: Color(0xFFE19767),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16.0),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16.0),
+                    borderSide: BorderSide(color: Color(0xFFE19767)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16.0),
+                    borderSide: BorderSide(color: Color(0xFFE19767)),
+                  ),
+                  filled: true,
+                  fillColor: Color(0xFFFEFCFB),
+                ),
+              ),
+              SizedBox(height: 20), // Adds some space between search and list
+              Expanded(
+                child: ListView.builder(
+                  itemCount: filteredCustomers.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10.0),
+                      child: MasterCustomerProfile(
+                        nama: filteredCustomers[index].nama!,
+                        noHp: filteredCustomers[index].noHp!,
+                        alamat: filteredCustomers[index].alamat!,
+                        kota: filteredCustomers[index].kota!,
+                        onDelete: _deleteItem,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   // void fetchData() async {
   //   const url = "http://10.0.2.2:8082/proyek_pos/customer";
