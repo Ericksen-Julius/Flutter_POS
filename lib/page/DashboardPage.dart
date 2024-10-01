@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:proyek_pos/component/CardMenu.dart';
 import 'package:proyek_pos/component/CardProduk.dart';
+import 'package:proyek_pos/page/TambahKursPage.dart';
 import 'package:proyek_pos/page/MasterCustomerPage.dart';
 import 'package:proyek_pos/page/MasterProdukPage.dart';
 import 'package:proyek_pos/page/OnBoardingPage.dart';
@@ -21,7 +22,7 @@ class _DashboardpageState extends State<Dashboardpage> {
     TransaksiPenjualanPage(),
     MasterProdukPage(),
     MasterCustomerPage(),
-    TransaksiPenjualanPage(),
+    TambahKursPage(),
   ];
   final List<String> carouselImages = [
     'assets/banner1.png',

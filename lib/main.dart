@@ -76,7 +76,7 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: '/transaksipenjualan',
+      initialRoute: '/dashboard',
       routes: {
         '/': (context) => BottomNavbar(),
         '/splash': (context) => SplashScreenPage(),
