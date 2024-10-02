@@ -2,98 +2,9 @@
 
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:nb_utils/nb_utils.dart';
-
-class NetworkImageWithLoading extends StatelessWidget {
-  final String imageUrl;
-
-  const NetworkImageWithLoading({
-    super.key,
-    required this.imageUrl,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<ImageProvider>(
-      future: _loadImage(imageUrl),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          // Show loading indicator while waiting for image to load
-          return Center(
-            child: Container(
-              width: double.infinity,
-              height: 100, // Set the height as per your requirement
-              padding: EdgeInsets.all(10.0), // Add padding
-              alignment: Alignment.center, // Center the loading indicator
-              child: CircularProgressIndicator(), // Default size
-            ),
-          );
-        } else if (snapshot.hasError) {
-          // If there's an error, show the default image
-          return Container(
-            height: 100, // Maintain consistent height
-            padding: EdgeInsets.all(10.0), // Add padding
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/default_image.jpg'),
-                fit: BoxFit.cover,
-              ),
-            ),
-          );
-        } else if (snapshot.hasData) {
-          // If the image is loaded successfully, display it
-          return Container(
-            height: 100, // Maintain consistent height
-            padding: EdgeInsets.all(10.0), // Add padding
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16.0),
-              child: Image(
-                image: snapshot.data!,
-                fit: BoxFit.cover,
-                width: double.infinity,
-              ),
-            ),
-          );
-        } else {
-          // Fallback in case none of the above states apply
-          return Container(); // Return an empty container
-        }
-      },
-    );
-  }
-
-  Future<ImageProvider> _loadImage(String url) async {
-    // Create a completer to handle the async loading
-    final completer = Completer<ImageProvider>();
-
-    // Create a NetworkImage
-    final networkImage = NetworkImage(url);
-
-    // Add a listener for the image loading
-    final imageStream = networkImage.resolve(ImageConfiguration());
-
-    // Listen to the stream
-    imageStream.addListener(
-      ImageStreamListener(
-        (ImageInfo imageInfo, bool sync) {
-          // If image is loaded successfully, complete the future with the image
-          completer.complete(networkImage);
-        },
-        onError: (dynamic exception, StackTrace? stackTrace) {
-          // If there is an error, complete with a default asset image
-          completer.complete(AssetImage('assets/default_image.jpg'));
-        },
-      ),
-    );
-
-    // Return the future from the completer
-    return completer.future.timeout(Duration(seconds: 5), onTimeout: () {
-      // If it times out, return the default asset image
-      return AssetImage('assets/default_image.jpg');
-    });
-  }
-}
+// import 'package:nb_utils/nb_utils.dart';
 
 class ProductCardTransaksi extends StatelessWidget {
   final String imagePath;
@@ -143,12 +54,45 @@ class ProductCardTransaksi extends StatelessWidget {
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.only(
-              left: 10.0, right: 20, top: 10.0, bottom: 10.0),
+          padding: const EdgeInsets.all(10.0),
           child: Row(
             children: [
               Expanded(
-                  flex: 5, child: NetworkImageWithLoading(imageUrl: imagePath)),
+                flex: 5,
+                child: Container(
+                  height: 100.0, // Maintain consistent height
+                  padding: EdgeInsets.all(10.0), // Add padding
+                  child: ClipRRect(
+                    borderRadius:
+                        BorderRadius.circular(16.0), // Rounded corners
+                    child: CachedNetworkImage(
+                      imageUrl: imagePath,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Center(
+                        child: Container(
+                          width: double.infinity,
+                          height: 100, // Set the height as per your requirement
+                          padding: EdgeInsets.all(10.0), // Add padding
+                          alignment:
+                              Alignment.center, // Center the loading indicator
+                          child:
+                              CircularProgressIndicator(), // Loading indicator
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        height: 100, // Maintain consistent height
+                        padding: EdgeInsets.all(10.0), // Add padding
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage('assets/default_image.jpg'),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
               Expanded(
                 flex: 9,
                 child: Column(
