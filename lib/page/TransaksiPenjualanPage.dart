@@ -31,6 +31,7 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
   final TextEditingController _totalHargaController = TextEditingController();
   final TextEditingController _totalHargaItemsController =
       TextEditingController();
+  final TextEditingController _diskonController = TextEditingController();
 
   List<CartItem> _cart = [];
   bool _isSwitched = false;
@@ -91,6 +92,7 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
 
     // TODO: implement initState
     super.initState();
+    _diskonController.text = '0';
     String? cart = sp.getString('cartJson');
     print(cart);
     List<dynamic> temporary = jsonDecode(cart ?? '[]');
@@ -99,8 +101,27 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
     _jumlahController.addListener(() {
       _updateTotalPriceBasedOnBarcode();
     });
+    _diskonController.addListener(() {
+      _updateTotalPriceByDiskon();
+    });
 
     _namaCustomerController.text = sp.getString('customer_nama') ?? '';
+  }
+
+  Future<void> _updateTotalPriceByDiskon() async {
+    if (_diskonController.text.isNotEmpty) {
+      int diskon = int.parse(_diskonController.text);
+      double total2 = total * (100 - diskon.toDouble()) / 100;
+      String formattedTotal = NumberFormat.currency(
+        locale: 'id_ID',
+        symbol: 'Rp ',
+        decimalDigits: 0,
+      ).format(total2);
+      // String cleanedPrice = formattedTotal.replaceAll(RegExp(r'[^\d]'), '');
+
+      // total = int.parse(cleanedPrice);
+      _totalHargaController.text = formattedTotal;
+    }
   }
 
   Future<void> _updateTotalPriceBasedOnBarcode() async {
@@ -356,25 +377,24 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
                     ],
                   ),
                   SizedBox(height: 20),
-                  ListView.builder(
+                  ListView.separated(
                     shrinkWrap: true,
                     itemCount: _cart.length,
                     itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 20.0),
-                        child: ProductCardTransaksi(
-                          imagePath: _cart[index].produk.foto ?? '',
-                          productName: _cart[index].produk.nama ?? '',
-                          productCode: _cart[index].produk.barcodeID ?? '',
-                          price: formatNumber(
-                              int.parse(_cart[index].produk.berat ?? '0'),
-                              kurs),
-                          count: _cart[index].count,
-                          onValueChange: _updateValues,
-                          onItemDelete: _deleteItem,
-                        ),
+                      return ProductCardTransaksi(
+                        // key: ValueKey(_cart[index].produk.barcodeID),
+                        imagePath: _cart[index].produk.foto ?? '',
+                        productName: _cart[index].produk.nama ?? '',
+                        productCode: _cart[index].produk.barcodeID ?? '',
+                        price: formatNumber(
+                            int.parse(_cart[index].produk.berat ?? '0'), kurs),
+                        count: _cart[index].count,
+                        onValueChange: _updateValues,
+                        onItemDelete: _deleteItem,
                       );
                     },
+                    separatorBuilder: (context, index) =>
+                        SizedBox(height: 20.0),
                   ),
                   Divider(
                     thickness: 1,
@@ -484,10 +504,52 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
                         onChanged: (value) {
                           setState(() {
                             _isSwitched = value;
+                            if (!value) {
+                              _diskonController.text = '0';
+                            }
                           });
                         },
                       )
                     ],
+                  ),
+                  SizedBox(height: 10),
+                  Visibility(
+                    visible: _isSwitched,
+                    maintainSize: false,
+                    maintainAnimation: true,
+                    maintainState: true,
+                    child: TextField(
+                      controller: _diskonController,
+                      style: TextStyle(color: Color(0xFF667085)),
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        prefixIcon: Icon(
+                          Icons.error_outline,
+                          size: 30.0,
+                        ),
+                        suffixIcon: Icon(
+                          Icons.percent,
+                          size: 30.0,
+                        ),
+                        hintText: "Masukkan diskon (%)",
+                        hintStyle: TextStyle(
+                          color: Color(0xFFD0D5DD),
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16.0),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16.0),
+                          borderSide: BorderSide(color: Color(0xFFD0D5DD)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16.0),
+                          borderSide: BorderSide(color: Color(0xFFD0D5DD)),
+                        ),
+                        filled: true, // tanda TextField ada background color
+                        fillColor: Colors.white,
+                      ),
+                    ),
                   ),
                   SizedBox(height: 10),
                   summaryComponent(),
@@ -544,7 +606,13 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CheckOutPage(totalHarga: total),
+                      builder: (context) => CheckOutPage(
+                          totalHarga: (total *
+                                  (100 -
+                                      int.parse(_diskonController.text)
+                                          .toDouble()) /
+                                  100)
+                              .toInt()),
                     ),
                   );
                 }
