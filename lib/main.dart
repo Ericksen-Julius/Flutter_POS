@@ -25,7 +25,7 @@ Timer? _timer;
 void startSynchronization() {
   _timer = Timer.periodic(Duration(minutes: 1), (timer) async {
     await synchronizeAddCustomers();
-    await synchronizeDeleteCustomers();
+    await synchronizeAddCustomers();
     await synchronizeProduk();
     await synchronizeKurs();
     await synchronizeNota();

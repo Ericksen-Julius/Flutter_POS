@@ -92,6 +92,7 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
 
     // TODO: implement initState
     super.initState();
+    // sp.remove('customer_nama');
     _diskonController.text = '0';
     String? cart = sp.getString('cartJson');
     print(cart);

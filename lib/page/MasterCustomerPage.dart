@@ -65,8 +65,10 @@ class MasterCustomerPageState extends State<MasterCustomerPage> {
         jsonEncode(customers.map((item) => item.toJson()).toList());
     await sp.setString('customersLocal', updatedCustomers);
     Map<String, dynamic> requestData = {'no_hp': noHp};
+    print(requestData);
+    // return;
     await saveUnsentDeleteCustomersLocally(requestData);
-    await synchronizeDeleteCustomers();
+    await synchronizeDeleteCustomers(context);
     // setState(() {
     //   _cart = items;
     //   total = CartItem.calculateTotalPrice(_cart, kurs);

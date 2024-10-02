@@ -346,7 +346,7 @@ class _DashboardpageState extends State<Dashboardpage> {
       );
       final body = response.body;
       final json = jsonDecode(body);
-      print("Status kode response: ${response.statusCode}");
+      // print("Status kode response: ${response.statusCode}");
       setState(() {
         kurs = int.parse(json['data'][0]['KURS']);
         sp.setInt('kursLocal', kurs);

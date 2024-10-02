@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:proyek_pos/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,8 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 Future<void> saveUnsentKursLocally(Map<String, dynamic> kurs) async {
   // String? unsentKursJson = sp.getString('unsentKurs');
   // unsentKursList.add(kurs);
-  print("check");
-  print(kurs);
+  debugPrint("check");
+  debugPrint(kurs.toString());
   await sp.setString('unsentKurs', jsonEncode(kurs));
 }
 
@@ -21,9 +22,9 @@ Future<void> synchronizeKurs() async {
     return;
   }
 
-  // print(unsentKursJson);
-  Map<String,dynamic> unsentKursList = jsonDecode(unsentKursJson);
-  // print(unsentKursList['tanggal']);
+  // debugPrint(unsentKursJson);
+  Map<String, dynamic> unsentKursList = jsonDecode(unsentKursJson);
+  // debugPrint(unsentKursList['tanggal']);
 
   try {
     final response = await http.post(
@@ -35,7 +36,6 @@ Future<void> synchronizeKurs() async {
     );
 
     final body = jsonDecode(response.body);
-    print(body);
-  } catch (e) {
-  }
+    debugPrint(body);
+  } catch (e) {}
 }
