@@ -110,6 +110,12 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
 
   Future<void> _updateTotalPriceByDiskon() async {
     if (_diskonController.text.isNotEmpty) {
+      if (int.parse(_diskonController.text) > 100) {
+        _diskonController.text = '100';
+      } else if (int.parse(_diskonController.text) < 0) {
+        _diskonController.text = '0';
+      }
+      // print('cel');
       int diskon = int.parse(_diskonController.text);
       double total2 = total * (100 - diskon.toDouble()) / 100;
       String formattedTotal = NumberFormat.currency(
@@ -140,8 +146,8 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
 
         if (foundItem != null) {
           foundItem.count = jumlah;
-          print(itemPrice);
-          print(foundItem.count);
+          // print(itemPrice);
+          // print(foundItem.count);
           int totalHarga = itemPrice! * jumlah;
           setState(() {
             _totalHargaItemsController.text = NumberFormat.currency(
@@ -161,6 +167,7 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
             decimalDigits: 0,
           ).format(total);
           _totalHargaController.text = formattedTotal;
+          _updateTotalPriceByDiskon();
 
           // print('cek cart');
           // print(sp.getString('cartJson'));
