@@ -1,13 +1,21 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:intl/intl.dart';
 import 'package:proyek_pos/component/CardMenu.dart';
 import 'package:proyek_pos/component/CardProduk.dart';
+import 'package:proyek_pos/component/ProdukCard.dart';
+import 'package:proyek_pos/main.dart';
+import 'package:proyek_pos/model/ProdukModel.dart';
 import 'package:proyek_pos/page/TambahKursPage.dart';
 import 'package:proyek_pos/page/MasterCustomerPage.dart';
 import 'package:proyek_pos/page/MasterProdukPage.dart';
-import 'package:proyek_pos/page/OnBoardingPage.dart';
+// import 'package:proyek_pos/page/OnBoardingPage.dart';
+import 'package:http/http.dart' as http;
 import 'package:proyek_pos/page/TransaksiPenjualanPage.dart';
 
 class Dashboardpage extends StatefulWidget {
@@ -18,12 +26,23 @@ class Dashboardpage extends StatefulWidget {
 }
 
 class _DashboardpageState extends State<Dashboardpage> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    fetchData();
+    fetchKurs();
+  }
+
   final List<Widget> _menuPages = [
     TransaksiPenjualanPage(),
     MasterProdukPage(),
     MasterCustomerPage(),
     TambahKursPage(),
   ];
+  List<Produk> produk = [];
+  List<Produk> filteredProduk = [];
+  var kurs = 0;
   final List<String> carouselImages = [
     'assets/banner1.png',
     'assets/banner2.png',
@@ -218,16 +237,20 @@ class _DashboardpageState extends State<Dashboardpage> {
                   ),
                 ),
                 Wrap(
-                  spacing: 8.0, // Horizontal space between items
-                  runSpacing: 8.0, // Vertical space between rows
-                  children: List.generate(products.length, (index) {
+                  spacing: 15.0, // Horizontal space between items
+                  runSpacing: 15.0, // Vertical space between rows
+                  children: List.generate(produk.length, (index) {
                     return SizedBox(
                       width: MediaQuery.of(context).size.width *
                           0.45, // Adjust the width for 2 items per row
-                      child: CardProduk(
-                        imagePath: products[index]['imagePath']!,
-                        label: products[index]['label']!,
-                        harga: products[index]['harga']!,
+                      child: ProdukCard(
+                        imagePath:
+                            'http://10.0.2.2:8082/proyek_pos/uploads/${produk[index].foto}',
+                        label: produk[index].nama!,
+                        berat: int.parse(produk[index].berat!),
+                        kurs: kurs,
+                        kategori: produk[index].kategori!,
+                        barcodeID: produk[index].barcodeID!,
                       ),
                     );
                   }),
@@ -257,5 +280,83 @@ class _DashboardpageState extends State<Dashboardpage> {
         ),
       ),
     );
+  }
+
+  void fetchData() async {
+    // print("Mulai fetchData...");
+
+    String? produksLocal = sp.getString('produksLocal');
+    print(produksLocal);
+    try {
+      // print("Coba decode local data...");
+      List<dynamic> produkListLocal = jsonDecode(produksLocal ?? '[]');
+      setState(() {
+        produk = produkListLocal
+            .map((item) => Produk.fromJson(item))
+            .take(4)
+            .toList();
+      });
+      // print("Local data berhasil dimuat.");
+    } catch (e) {
+      print('Error decoding JSON local: $e');
+    }
+
+    try {
+      // print("Mulai request ke server...");
+      const url = "http://10.0.2.2:8082/proyek_pos/barang";
+      final uri = Uri.parse(url);
+      final response = await http.get(
+        uri,
+      );
+      final body = response.body;
+      final json = jsonDecode(body);
+      // print("Status kode response: ${response.statusCode}");
+      if (response.statusCode == 200) {
+        setState(() {
+          produk = (json['data'] as List)
+              .map((item) => Produk.fromJson(item))
+              .take(4)
+              .toList();
+          // filteredProduk = produk;
+          sp.setString('produksLocal', jsonEncode(json['data'] ?? []));
+          // print(filteredProduk);
+        });
+      } else {
+        print('Server error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("Error dalam request ke server: $e");
+      if (e is SocketException) {
+        print('Tidak dapat terhubung ke server.');
+      }
+    }
+  }
+
+  Future<void> fetchKurs() async {
+    // print("Mulai fetchKurs...");
+
+    kurs = sp.getInt('kursLocal') ?? 0;
+    // print(kurs);
+    // print(kurs);
+    const url = "http://10.0.2.2:8082/proyek_pos/kurs";
+    try {
+      final uri = Uri.parse(url);
+      final response = await http.get(
+        uri,
+      );
+      final body = response.body;
+      final json = jsonDecode(body);
+      print("Status kode response: ${response.statusCode}");
+      setState(() {
+        kurs = int.parse(json['data'][0]['KURS']);
+        sp.setInt('kursLocal', kurs);
+        // print(kurs);
+      });
+    } catch (e) {
+      print("Error dalam request ke server: $e");
+      if (e is SocketException) {
+        print('Tidak dapat terhubung ke server.');
+      }
+    }
   }
 }

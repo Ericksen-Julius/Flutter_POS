@@ -83,7 +83,7 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: '/checkout',
+      initialRoute: '/splash',
       routes: {
         '/': (context) => BottomNavbar(),
         '/splash': (context) => SplashScreenPage(),

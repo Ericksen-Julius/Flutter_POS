@@ -18,16 +18,17 @@ class ProdukCard extends StatelessWidget {
   final String kategori;
   final String barcodeID;
   final int kurs;
+  final bool? dashBoard;
 
-  const ProdukCard({
-    super.key,
-    required this.imagePath,
-    required this.label,
-    required this.berat,
-    required this.kategori,
-    required this.barcodeID,
-    required this.kurs,
-  });
+  const ProdukCard(
+      {super.key,
+      required this.imagePath,
+      required this.label,
+      required this.berat,
+      required this.kategori,
+      required this.barcodeID,
+      required this.kurs,
+      this.dashBoard});
 
   @override
   Widget build(BuildContext context) {
@@ -38,15 +39,18 @@ class ProdukCard extends StatelessWidget {
     ).format(berat * kurs);
     return GestureDetector(
       onTap: () {
-        _loadCartItem();
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => TransaksiPenjualanPage(),
-          ),
-        );
+        if (dashBoard == false) {
+          _loadCartItem();
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TransaksiPenjualanPage(),
+            ),
+          );
+        }
       },
       child: Container(
+        padding: EdgeInsets.symmetric(vertical: 4.0),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12.0),
@@ -71,7 +75,7 @@ class ProdukCard extends StatelessWidget {
               height: 130.0, // Maintain consistent height
               padding: EdgeInsets.all(5.0), // Add padding
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(16.0), // Rounded corners
+                // borderRadius: BorderRadius.circular(16.0), // Rounded corners
                 child: CachedNetworkImage(
                   imageUrl: imagePath,
                   fit: BoxFit.cover,

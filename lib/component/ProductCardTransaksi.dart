@@ -54,7 +54,7 @@ class ProductCardTransaksi extends StatelessWidget {
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(10.0),
+          padding: const EdgeInsets.only(right: 10.0, top: 6, bottom: 6),
           child: Row(
             children: [
               Expanded(

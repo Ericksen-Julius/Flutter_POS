@@ -29,8 +29,10 @@ class _ProdukBodyState extends State<ProdukBody> {
     // TODO: implement initState
     super.initState();
     fetchData();
-    sp.remove('kursLocal');
+    // sp.remove('kursLocal');
     kurs = sp.getInt('kursLocal') ?? 0;
+    print('kurs');
+    print(kurs);
     _searchController.addListener(_filterProduk);
     isSelected[0] = true;
   }
@@ -310,6 +312,7 @@ class _ProdukBodyState extends State<ProdukBody> {
                   kurs: kurs,
                   kategori: filteredProduk[index].kategori!,
                   barcodeID: filteredProduk[index].barcodeID!,
+                  dashBoard: false,
                 ),
               );
             },
@@ -358,6 +361,35 @@ class _ProdukBodyState extends State<ProdukBody> {
       } else {
         print('Server error: ${response.statusCode}');
       }
+    } catch (e) {
+      print("Error dalam request ke server: $e");
+      if (e is SocketException) {
+        print('Tidak dapat terhubung ke server.');
+      }
+    }
+  }
+
+  Future<void> fetchKurs() async {
+    // print("Mulai fetchKurs...");
+
+    kurs = sp.getInt('kursLocal') ?? 0;
+    print('kurs');
+    print(kurs);
+    // print(kurs);
+    const url = "http://10.0.2.2:8082/proyek_pos/kurs";
+    try {
+      final uri = Uri.parse(url);
+      final response = await http.get(
+        uri,
+      );
+      final body = response.body;
+      final json = jsonDecode(body);
+      print("Status kode response: ${response.statusCode}");
+      setState(() {
+        kurs = int.parse(json['data'][0]['KURS']);
+        sp.setInt('kursLocal', kurs);
+        // print(kurs);
+      });
     } catch (e) {
       print("Error dalam request ke server: $e");
       if (e is SocketException) {
