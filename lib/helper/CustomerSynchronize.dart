@@ -137,3 +137,67 @@ Future<void> synchronizeDeleteCustomers() async {
     }
   }
 }
+
+Future<void> saveUnsentEditCustomerLocally(Map<String, dynamic> customer) async {
+  String? unsentEditCustomerJson = sp.getString('unsentEditCustomer');
+  List<dynamic> unsentEditCustomerList = jsonDecode(unsentEditCustomerJson ?? '[]');
+  unsentEditCustomerList.add(customer);
+  print("check");
+  print(unsentEditCustomerList);
+  await sp.setString('unsentEditCustomer', jsonEncode(unsentEditCustomerList));
+}
+
+Future<void> synchronizeEditCustomers() async {
+  const url = "http://10.0.2.2:8082/proyek_pos/customer";
+  final uri = Uri.parse(url);
+
+  // Get the list of unsent edited customers from local storage
+  String? temp = sp.getString('unsentEditCustomer');
+  if (temp == null) {
+    return; // No unsent edited customers to sync
+  }
+
+  List<dynamic> unsentEditCustomerList;
+  try {
+    unsentEditCustomerList = jsonDecode(temp);
+  } catch (e) {
+    print('Error decoding JSON: $e');
+    return; // Stop execution if there's an error decoding
+  }
+
+  for (var customer in List.from(unsentEditCustomerList)) {
+    try {
+      String noHp = customer['no_hp'].toString().trim();
+      final response = await http.put(
+        uri,
+        headers: {
+          'Content-type': 'application/json',
+        },
+        body: json.encode({
+          'no_hp': noHp,
+          'nama': customer['nama'],
+          'alamat': customer['alamat'],
+          'kota': customer['kota'],
+        }),
+      );
+      print(customer['no_hp'].toString().length);
+      final body = jsonDecode(response.body);
+      print('1');
+      print(body);
+      if (response.statusCode == 200 && body['success']) {
+        unsentEditCustomerList.remove(customer);
+        await sp.setString('unsentEditCustomer', jsonEncode(unsentEditCustomerList));
+        print("test");
+        print(sp.getString('unsentEditCustomer'));
+      } else {
+        print('Failed to update customer: ${response.statusCode}');
+        break; // Stop the loop if there's an issue with the response
+      }
+    } catch (e) {
+      print("Error occurred: $e");
+      break; // Stop the loop if there's an error
+    }
+  }
+}
+
+

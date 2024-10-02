@@ -12,6 +12,7 @@ import 'package:proyek_pos/page/CheckoutPage.dart';
 // import 'package:proyek_pos/page/CheckoutPage.dart';
 import 'package:proyek_pos/page/DashboardPage.dart';
 import 'package:proyek_pos/page/Loginpage.dart';
+import 'package:proyek_pos/page/MasterCustomerPage.dart';
 import 'package:proyek_pos/page/OnBoardingPage.dart';
 import 'package:proyek_pos/page/Profile.dart';
 import 'package:proyek_pos/page/Riwayat.dart';
@@ -28,6 +29,7 @@ void startSynchronization() {
     await synchronizeProduk();
     await synchronizeKurs();
     await synchronizeNota();
+    await synchronizeEditCustomers();
   });
 }
 
@@ -81,7 +83,7 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: '/dashboard',
+      initialRoute: '/checkout',
       routes: {
         '/': (context) => BottomNavbar(),
         '/splash': (context) => SplashScreenPage(),
@@ -90,6 +92,7 @@ class _MainAppState extends State<MainApp> {
         '/login': (context) => LoginPage(),
         '/riwayat': (context) => Riwayat(),
         '/profile': (context) => Profile(),
+        '/masterCustomer': (context) => MasterCustomerPage(),
         '/transaksipenjualan': (context) => TransaksiPenjualanPage(),
         '/cariCustomer': (context) => CariCustomerPage(),
         '/checkout': (context) => CheckOutPage(

@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:proyek_pos/component/EditCustomerModal.dart';
 import 'package:proyek_pos/main.dart';
 import 'package:proyek_pos/model/CustomerModel.dart';
 import 'package:proyek_pos/page/MasterCustomerPage.dart';
@@ -123,7 +124,21 @@ class _MasterCustomerProfileState extends State<MasterCustomerProfile> {
                       ],
                     ),
                     child: IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        print("pencet modal");
+                        showModalBottomSheet(
+                          context: context, 
+                          isScrollControlled: true,
+                          builder: (BuildContext context) {
+                            return EditCustomerModal(
+                              nama: widget.nama,
+                              noHp: widget.noHp,
+                              alamat: widget.alamat,
+                              kota: widget.kota,
+                            ); 
+                          },
+                        );
+                      },
                       icon: Icon(
                         Icons.edit,
                         color: Colors.white,

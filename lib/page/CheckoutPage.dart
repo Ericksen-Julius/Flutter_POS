@@ -25,16 +25,36 @@ class _CheckOutPageState extends State<CheckOutPage> {
   int totalBayar = 0;
   int kembali = 0;
   List<dynamic> jenisBayar = [];
+  final TextEditingController nominalController = TextEditingController();
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     totalBiaya = widget.totalHarga + charge;
-    totalBayar = totalBiaya;
-    kembali = totalBayar - totalBiaya;
+    totalBayar = 0;
+    kembali = 0;
+    nominalController.addListener((){
+      _updateTotalKembali();
+    });
     fetchJenisBayar();
   }
 
+  Future<void> _updateTotalKembali()async {
+    if(nominalController.text.isNotEmpty){
+      kembali = int.parse(nominalController.text)-totalBiaya ?? 0;
+      print(kembali);
+      setState(() {
+        kembali = kembali;
+        totalBayar = int.parse(nominalController.text);
+      });
+
+    } else{
+      setState(() {
+        kembali = 0;
+        totalBayar = 0;
+      });
+    }
+  }
   void _toggleMetodePembayaran(int index) {
     setState(() {
       if (!isSelected[index]) {
@@ -143,7 +163,31 @@ class _CheckOutPageState extends State<CheckOutPage> {
                     },
                   ),
                 ),
-              )
+              ),
+              if (isSelected.contains(true) && findFirstTrueIndex(isSelected) != -1) // Check if any button is selected
+                Column(
+                  children: [
+                    SizedBox(height: 20),
+                    TextField(
+                      controller: nominalController,
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans Reguler',
+                        color: Colors.black,
+                      ),
+                      decoration: InputDecoration(  
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                          borderSide: BorderSide(
+                            color: Colors.black,
+                            width: 2.0,
+                          )
+                        ),
+                        hintText: 'Nominal Pembayaran',
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ],
+                ),
             ],
           ),
         ),

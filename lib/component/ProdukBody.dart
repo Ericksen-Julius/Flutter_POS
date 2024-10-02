@@ -29,6 +29,7 @@ class _ProdukBodyState extends State<ProdukBody> {
     // TODO: implement initState
     super.initState();
     fetchData();
+    sp.remove('kursLocal');
     kurs = sp.getInt('kursLocal') ?? 0;
     _searchController.addListener(_filterProduk);
     isSelected[0] = true;

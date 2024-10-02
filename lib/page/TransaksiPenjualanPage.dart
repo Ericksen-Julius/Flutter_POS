@@ -91,6 +91,7 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
 
     // TODO: implement initState
     super.initState();
+    // sp.remove('kursLocal');
     String? cart = sp.getString('cartJson');
     print(cart);
     List<dynamic> temporary = jsonDecode(cart ?? '[]');
