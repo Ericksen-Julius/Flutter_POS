@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:proyek_pos/helper/CustomerSynchronize.dart';
+import 'package:proyek_pos/helper/KursSynchronize.dart';
 import 'package:proyek_pos/helper/NotaSynchronize.dart';
 import 'package:proyek_pos/helper/ProdukSynchronize.dart';
 import 'package:proyek_pos/page/BottomNavbar.dart';
@@ -24,6 +25,7 @@ void startSynchronization() {
   _timer = Timer.periodic(Duration(minutes: 1), (timer) async {
     await synchronizeAddCustomers();
     await synchronizeProduk();
+    await synchronizeKurs();
     await synchronizeNota();
   });
 }
