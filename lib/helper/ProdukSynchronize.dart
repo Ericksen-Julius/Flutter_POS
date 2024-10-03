@@ -11,7 +11,7 @@ Future<void> saveUnsentProdukLocally(Map<String, dynamic> produk) async {
   List<dynamic> unsentProdukList = jsonDecode(unsentProdukJson ?? '[]');
   unsentProdukList.add(produk);
   await sp.setString('unsentProduk', jsonEncode(unsentProdukList));
-  print(sp.getString('unsentProduk'));
+  // print(sp.getString('unsentProduk'));
 }
 
 // Function to synchronize unsent products

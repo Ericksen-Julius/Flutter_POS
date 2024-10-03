@@ -111,14 +111,12 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
 
   Future<void> _updateTotalPriceByDiskon() async {
     if (_diskonController.text.isNotEmpty) {
-      if (int.parse(_diskonController.text) > 100) {
+      if (double.parse(_diskonController.text) > 100) {
         _diskonController.text = '100';
-      } else if (int.parse(_diskonController.text) < 0) {
-        _diskonController.text = '0';
       }
       // print('cel');
-      int diskon = int.parse(_diskonController.text);
-      double total2 = total * (100 - diskon.toDouble()) / 100;
+      double diskon = double.parse(_diskonController.text);
+      double total2 = total * (100 - diskon) / 100;
       String formattedTotal = NumberFormat.currency(
         locale: 'id_ID',
         symbol: 'Rp ',
@@ -616,9 +614,7 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
                     MaterialPageRoute(
                       builder: (context) => CheckOutPage(
                           totalHarga: (total *
-                                  (100 -
-                                      int.parse(_diskonController.text)
-                                          .toDouble()) /
+                                  (100 - double.parse(_diskonController.text)) /
                                   100)
                               .toInt()),
                     ),
