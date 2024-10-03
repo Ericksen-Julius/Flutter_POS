@@ -1,8 +1,12 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'dart:convert';
 
 import 'package:proyek_pos/main.dart';
 import 'package:proyek_pos/model/CustomerModel.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:proyek_pos/page/MasterCustomerPage.dart';
 
 Future<void> updateLocalStorage(List<Customer> customers) async {
   // Simpan daftar pelanggan yang diperbarui ke local storage
@@ -18,6 +22,7 @@ Future<void> saveUnsentDeleteCustomersLocally(
   List<dynamic> unsentDeleteCustomersList =
       jsonDecode(unsentDeleteCustomers ?? '[]');
   unsentDeleteCustomersList.add(customer);
+  debugPrint(unsentDeleteCustomersList.toString());
   await sp.setString(
       'temporaryDeleteCustomer', jsonEncode(unsentDeleteCustomersList));
 }
@@ -34,7 +39,7 @@ Future<void> synchronizeAddCustomers() async {
   try {
     temporaryAddCustomerList = jsonDecode(temp ?? '[]');
   } catch (e) {
-    print('Error saat melakukan decode JSON: $e');
+    debugPrint('Error saat melakukan decode JSON: $e');
     return; // Hentikan eksekusi jika ada kesalahan saat decode
   }
 
@@ -75,7 +80,7 @@ Future<void> synchronizeAddCustomers() async {
   }
 }
 
-Future<void> synchronizeDeleteCustomers() async {
+Future<void> synchronizeDeleteCustomers(BuildContext? context) async {
   const url = "http://10.0.2.2:8082/proyek_pos/customer";
   final uri = Uri.parse(url);
 
@@ -89,22 +94,22 @@ Future<void> synchronizeDeleteCustomers() async {
   try {
     temporaryDeleteCustomer = jsonDecode(temp ?? '[]');
   } catch (e) {
-    print('Error decoding JSON: $e');
+    debugPrint('Error decoding JSON: $e');
     return; // Stop execution if there's an error decoding
   }
-  // print(temporaryDeleteCustomer);
+  // debugPrint(temporaryDeleteCustomer);
   // return;
   // return;
 
   // List<Customer> temporaryDeleteCustomer = temporaryDeleteCustomerList
   //     .map((item) => Customer.fromJson(item))
   //     .toList();
-  // print(temporaryDeleteCustomer);
+  // debugPrint(temporaryDeleteCustomer);
   // return;
 
   for (var customer in List.from(temporaryDeleteCustomer)) {
     try {
-      // print(customer['no_hp']);
+      // debugPrint(customer['no_hp']);
       final response = await http.delete(
         uri,
         headers: {
@@ -115,7 +120,7 @@ Future<void> synchronizeDeleteCustomers() async {
       );
 
       final body = jsonDecode(response.body);
-      print(body);
+      // debugPrint(body);
       if (response.statusCode == 200 && body['success']) {
         temporaryDeleteCustomer.remove(customer); // Remove from local list
         await sp.setString('temporaryDeleteCustomer',
@@ -126,24 +131,56 @@ Future<void> synchronizeDeleteCustomers() async {
         temporaryDeleteCustomer.remove(customer); // Remove from local list
         await sp.setString(
             'temporaryDeleteCustomer', jsonEncode(temporaryDeleteCustomer));
+      } else if (body['message'] ==
+              'Customer masih berhubungan dengan nota, tidak bisa dihapus' &&
+          !body['success']) {
+        temporaryDeleteCustomer.remove(customer); // Remove from local list
+        await sp.setString(
+            'temporaryDeleteCustomer', jsonEncode(temporaryDeleteCustomer));
+        if (context != null) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Error'),
+                content: Text(
+                    'Customer masih berhubungan dengan nota, tidak bisa dihapus.'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Menutup dialog
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MasterCustomerPage(),
+                        ),
+                      );
+                    },
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        }
       } else {
-        print(
-            'Failed to delete customer: ${response.statusCode}'); // Handle unsuccessful response
-        break; // Stop the loop if there's an issue with the response
+        break; // Stop the loop if there's an error
       }
     } catch (e) {
-      print("Error occurred: $e"); // Handle errors
+      debugPrint("Error occurred: $e"); // Handle errors
       break; // Stop the loop if there's an error
     }
   }
 }
 
-Future<void> saveUnsentEditCustomerLocally(Map<String, dynamic> customer) async {
+Future<void> saveUnsentEditCustomerLocally(
+    Map<String, dynamic> customer) async {
   String? unsentEditCustomerJson = sp.getString('unsentEditCustomer');
-  List<dynamic> unsentEditCustomerList = jsonDecode(unsentEditCustomerJson ?? '[]');
+  List<dynamic> unsentEditCustomerList =
+      jsonDecode(unsentEditCustomerJson ?? '[]');
   unsentEditCustomerList.add(customer);
-  print("check");
-  print(unsentEditCustomerList);
+  debugPrint("check");
+  debugPrint(unsentEditCustomerList.toString());
   await sp.setString('unsentEditCustomer', jsonEncode(unsentEditCustomerList));
 }
 
@@ -161,7 +198,7 @@ Future<void> synchronizeEditCustomers() async {
   try {
     unsentEditCustomerList = jsonDecode(temp);
   } catch (e) {
-    print('Error decoding JSON: $e');
+    debugPrint('Error decoding JSON: $e');
     return; // Stop execution if there's an error decoding
   }
 
@@ -180,24 +217,23 @@ Future<void> synchronizeEditCustomers() async {
           'kota': customer['kota'],
         }),
       );
-      print(customer['no_hp'].toString().length);
+      debugPrint(customer['no_hp'].toString().length.toString());
       final body = jsonDecode(response.body);
-      print('1');
-      print(body);
+      debugPrint('1');
+      debugPrint(body);
       if (response.statusCode == 200 && body['success']) {
         unsentEditCustomerList.remove(customer);
-        await sp.setString('unsentEditCustomer', jsonEncode(unsentEditCustomerList));
-        print("test");
-        print(sp.getString('unsentEditCustomer'));
+        await sp.setString(
+            'unsentEditCustomer', jsonEncode(unsentEditCustomerList));
+        debugPrint("test");
+        debugPrint(sp.getString('unsentEditCustomer'));
       } else {
-        print('Failed to update customer: ${response.statusCode}');
+        debugPrint('Failed to update customer: ${response.statusCode}');
         break; // Stop the loop if there's an issue with the response
       }
     } catch (e) {
-      print("Error occurred: $e");
+      debugPrint("Error occurred: $e");
       break; // Stop the loop if there's an error
     }
   }
 }
-
-

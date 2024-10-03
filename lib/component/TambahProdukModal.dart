@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:http_parser/http_parser.dart';
@@ -10,6 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
 import 'package:proyek_pos/helper/ProdukSynchronize.dart';
 import 'package:proyek_pos/main.dart';
+import 'package:proyek_pos/model/ProdukModel.dart';
 import 'package:proyek_pos/page/DashboardPage.dart';
 import 'package:proyek_pos/page/MasterProdukPage.dart';
 
@@ -248,6 +250,26 @@ class _TambahProdukModalState extends State<TambahProdukModal> {
     }
   }
 
+  String generateBarcode(String type) {
+    // Validate barcode type
+    if (type != 'LM' && type != 'GD') {
+      throw Exception('Invalid barcode type.');
+    }
+
+    String year = DateTime.now().year.toString().substring(2);
+
+    String randomNumber = List.generate(
+            10,
+            (index) =>
+                (index == 0) ? Random().nextInt(9) + 1 : Random().nextInt(10))
+        .join('');
+
+    // Format barcode
+    String barcode = type + year + randomNumber;
+
+    return barcode;
+  }
+
   Future<void> _submitForm() async {
     setState(() {
       isSubmitting = true;
@@ -256,8 +278,12 @@ class _TambahProdukModalState extends State<TambahProdukModal> {
     // Getting the index of the selected category
     int index = dropdownText.indexOf(_selectedItem!);
 
+    String barcode = generateBarcode(dropdownValue[index]);
+    // print(barcode);
+    // return;
     // Create the request data
     Map<String, String> requestData = {
+      'barcode_id': barcode,
       'nama': _inputNamaProdukController.text,
       'berat': _inputBeratController.text,
       'kategori': dropdownValue[index],
@@ -271,29 +297,29 @@ class _TambahProdukModalState extends State<TambahProdukModal> {
             _selectedImage!.path; // Store the image path for offline
       }
     }
+    // print(requestData);
+    // Navigator.pop(context);
+    // return;
+    String? produksLocal = sp.getString('produksLocal');
+    try {
+      // print("Coba decode local data...");
+      List<dynamic> produkListLocal = jsonDecode(produksLocal ?? '[]');
+      List<Produk> products = [];
+      products = produkListLocal.map((item) => Produk.fromJson(item)).toList();
+      products.add(Produk(
+          barcodeID: barcode,
+          nama: _inputNamaProdukController.text,
+          berat: _inputBeratController.text,
+          kategori: dropdownValue[index],
+          foto: _selectedImage!.path));
+      sp.setString('produksLocal', jsonEncode(products));
+
+      // print("Local data berhasil dimuat.");
+    } catch (e) {
+      print('Error decoding JSON local: $e');
+    }
 
     try {
-      // final uri = Uri.parse('http://10.0.2.2:8082/proyek_pos/barang');
-      // final request = http.MultipartRequest('POST', uri)
-      //   ..fields.addAll(requestData)
-      //   ..headers.addAll({
-      //     'Content-Type': 'multipart/form-data',
-      //   });
-
-      // // Adding the image file to the request if available
-      // if (_selectedImage != null) {
-      //   request.files.add(await http.MultipartFile.fromPath(
-      //     'foto',
-      //     _selectedImage!.path,
-      //     contentType: MediaType(mimeTypeData![0], mimeTypeData[1]),
-      //   ));
-      // }
-
-      // // Sending the request
-      // final response = await request.send();
-      // final responseBody = await response.stream.bytesToString();
-      // final jsonResponse = jsonDecode(responseBody);
-
       Navigator.pop(context);
 
       Future.delayed(Duration.zero, () {

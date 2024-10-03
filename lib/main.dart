@@ -18,6 +18,9 @@ import 'package:proyek_pos/page/Profile.dart';
 import 'package:proyek_pos/page/Riwayat.dart';
 import 'package:proyek_pos/page/SplashScreen.dart';
 import 'package:proyek_pos/page/TransaksiPenjualanPage.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http;
 
 late SharedPreferences sp;
 Timer? _timer;
@@ -25,7 +28,7 @@ Timer? _timer;
 void startSynchronization() {
   _timer = Timer.periodic(Duration(minutes: 1), (timer) async {
     await synchronizeAddCustomers();
-    await synchronizeDeleteCustomers();
+    await synchronizeAddCustomers();
     await synchronizeProduk();
     await synchronizeKurs();
     await synchronizeNota();
@@ -106,4 +109,29 @@ class _MainAppState extends State<MainApp> {
       // home: LoginPage(),
     );
   }
+
+  // void fetchData() async {
+  //   try {
+  //     // print("Mulai request ke server...");
+  //     const url = "http://10.0.2.2:8082/proyek_pos/barang";
+  //     final uri = Uri.parse(url);
+  //     final response = await http.get(
+  //       uri,
+  //     );
+  //     final body = response.body;
+  //     final json = jsonDecode(body);
+  //     // print("Status kode response: ${response.statusCode}");
+  //     if (response.statusCode == 200) {
+  //       sp.setString('produksLocal', jsonEncode(json['data'] ?? []));
+  //       // print(filteredProduk);
+  //     } else {
+  //       print('Server error: ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     print("Error dalam request ke server: $e");
+  //     if (e is SocketException) {
+  //       print('Tidak dapat terhubung ke server.');
+  //     }
+  //   }
+  // }
 }

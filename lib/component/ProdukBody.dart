@@ -31,8 +31,8 @@ class _ProdukBodyState extends State<ProdukBody> {
     fetchData();
     // sp.remove('kursLocal');
     kurs = sp.getInt('kursLocal') ?? 0;
-    print('kurs');
-    print(kurs);
+    // print('kurs');
+    // print(kurs);
     _searchController.addListener(_filterProduk);
     isSelected[0] = true;
   }
@@ -326,7 +326,6 @@ class _ProdukBodyState extends State<ProdukBody> {
     // print("Mulai fetchData...");
 
     String? produksLocal = sp.getString('produksLocal');
-    print(produksLocal);
     try {
       // print("Coba decode local data...");
       List<dynamic> produkListLocal = jsonDecode(produksLocal ?? '[]');
@@ -334,6 +333,7 @@ class _ProdukBodyState extends State<ProdukBody> {
         produk = produkListLocal.map((item) => Produk.fromJson(item)).toList();
         filteredProduk = produk;
       });
+      // print(filteredProduk[4].foto);
       // print("Local data berhasil dimuat.");
     } catch (e) {
       print('Error decoding JSON local: $e');
@@ -373,8 +373,8 @@ class _ProdukBodyState extends State<ProdukBody> {
     // print("Mulai fetchKurs...");
 
     kurs = sp.getInt('kursLocal') ?? 0;
-    print('kurs');
-    print(kurs);
+    // print('kurs');
+    // print(kurs);
     // print(kurs);
     const url = "http://10.0.2.2:8082/proyek_pos/kurs";
     try {

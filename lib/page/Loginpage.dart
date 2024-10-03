@@ -219,7 +219,15 @@ class _LoginPageState extends State<LoginPage> {
             await sp.setString('usersLocal', updatedUsersJson);
             // print("User added to SharedPreferences");
           } else {
-            // print("User already exists in SharedPreferences");
+            for (var user in users) {
+              if (user.userId == admin.userId) {
+                user.password = admin.password; // Update the password
+                break;
+              }
+            }
+            String updatedUsersJson =
+                jsonEncode(users.map((user) => user.toJson()).toList());
+            await sp.setString('usersLocal', updatedUsersJson);
           }
           Navigator.pushReplacement(
               context, MaterialPageRoute(builder: (context) => BottomNavbar()));

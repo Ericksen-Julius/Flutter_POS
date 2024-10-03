@@ -6,10 +6,12 @@ import 'package:http/http.dart' as http;
 
 // Function to save unsent products locally
 Future<void> saveUnsentProdukLocally(Map<String, dynamic> produk) async {
+  // sp.remove('unsentProduk');
   String? unsentProdukJson = sp.getString('unsentProduk');
   List<dynamic> unsentProdukList = jsonDecode(unsentProdukJson ?? '[]');
   unsentProdukList.add(produk);
   await sp.setString('unsentProduk', jsonEncode(unsentProdukList));
+  // print(sp.getString('unsentProduk'));
 }
 
 // Function to synchronize unsent products
@@ -27,6 +29,7 @@ Future<void> synchronizeProduk() async {
   for (var produk in List.from(unsentProdukList)) {
     try {
       final request = http.MultipartRequest('POST', uri)
+        ..fields['barcode_id'] = produk['barcode_id']
         ..fields['nama'] = produk['nama']
         ..fields['berat'] = produk['berat']
         ..fields['kategori'] = produk['kategori']
