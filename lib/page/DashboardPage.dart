@@ -286,7 +286,7 @@ class _DashboardpageState extends State<Dashboardpage> {
     // print("Mulai fetchData...");
 
     String? produksLocal = sp.getString('produksLocal');
-    print(produksLocal);
+    // print(produksLocal);
     try {
       // print("Coba decode local data...");
       List<dynamic> produkListLocal = jsonDecode(produksLocal ?? '[]');

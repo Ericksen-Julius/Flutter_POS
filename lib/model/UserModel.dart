@@ -1,8 +1,8 @@
 class User {
-  final int userId;
-  final String name;
-  final String password;
-  final String jabatan;
+  int userId;
+  String name;
+  String password;
+  String jabatan;
 
   User({
     required this.userId,
