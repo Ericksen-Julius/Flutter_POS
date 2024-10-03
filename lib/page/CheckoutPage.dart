@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:proyek_pos/component/CustomAppBar.dart';
 import 'dart:convert';
@@ -20,7 +21,7 @@ class CheckOutPage extends StatefulWidget {
 
 class _CheckOutPageState extends State<CheckOutPage> {
   List<bool> isSelected = [];
-  int charge = 10000;
+  // int charge = 10000;
   int totalBiaya = 0;
   int totalBayar = 0;
   int kembali = 0;
@@ -30,9 +31,10 @@ class _CheckOutPageState extends State<CheckOutPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    totalBiaya = widget.totalHarga + charge;
-    totalBayar = 0;
+    totalBiaya = widget.totalHarga;
+    totalBayar = totalBiaya;
     kembali = 0;
+    nominalController.text = formatNumber(totalBiaya);
     nominalController.addListener((){
       _updateTotalKembali();
     });
@@ -41,20 +43,48 @@ class _CheckOutPageState extends State<CheckOutPage> {
 
   Future<void> _updateTotalKembali()async {
     if(nominalController.text.isNotEmpty){
-      kembali = int.parse(nominalController.text)-totalBiaya ?? 0;
-      print(kembali);
+      String value = nominalController.text.replaceAll(RegExp(r'[^0-9]'), '');
+      // print('value');
+      // print(value);
+      // print(kembali);
+      if (value.isNotEmpty) {
+      int nominal = int.parse(value);
+      kembali = nominal - totalBiaya;
+
       setState(() {
         kembali = kembali;
-        totalBayar = int.parse(nominalController.text);
+        totalBayar = nominal;
       });
-
-    } else{
+      _formatAndSetText(nominal);
+    } else {
       setState(() {
         kembali = 0;
         totalBayar = 0;
       });
     }
+
+    } else{
+      setState(() {
+        kembali = 0;
+        totalBayar = totalBiaya;
+      });
+      _formatAndSetText(0);
+    }
   }
+
+  void _formatAndSetText(int value) {
+  String formatted = formatNumber(value);
+  if (!nominalController.text.startsWith('Rp ')) {
+    formatted = 'Rp ' + nominalController.text.replaceAll(RegExp(r'[^0-9]'), '');
+  }
+  
+  nominalController.value = TextEditingValue(
+    text: formatted,
+    selection: TextSelection.collapsed(
+      offset: formatted.length,
+    ),
+  );
+}
   void _toggleMetodePembayaran(int index) {
     setState(() {
       if (!isSelected[index]) {
@@ -93,8 +123,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
             children: [
               rowPembayaran('Total Harga', formatNumber(widget.totalHarga)),
               SizedBox(height: 5),
-              rowPembayaran('Charge', formatNumber(charge)),
-              SizedBox(height: 10),
+              // rowPembayaran('Charge', formatNumber(charge)),
+              // SizedBox(height: 10),
               Divider(
                 thickness: 1,
                 color: Color(0xFF3E3E3E),
@@ -174,6 +204,10 @@ class _CheckOutPageState extends State<CheckOutPage> {
                         fontFamily: 'Plus Jakarta Sans Reguler',
                         color: Colors.black,
                       ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        _RupiahInputFormatter(),
+                      ],
                       decoration: InputDecoration(  
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.0),
@@ -525,5 +559,23 @@ class _CheckOutPageState extends State<CheckOutPage> {
     //   // Save locally in case of any exception
     //   await saveUnsentNotaLocally(notaData);
     // }
+  }
+}
+
+class _RupiahInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    // Always keep the "Rp " prefix
+    if (!newValue.text.startsWith('Rp ')) {
+      final newText = 'Rp ' + newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+      return TextEditingValue(
+        text: newText,
+        selection: TextSelection.collapsed(offset: newText.length),
+      );
+    }
+    return newValue;
   }
 }

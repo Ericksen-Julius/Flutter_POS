@@ -15,7 +15,8 @@ class EditCustomerModal extends StatefulWidget {
   final String noHp;
   final String alamat;
   final String kota;
-  const EditCustomerModal({super.key, required this.nama, required this.noHp, required this.alamat, required this.kota});
+  final Function(Customer) onEdit;
+  const EditCustomerModal({super.key, required this.nama, required this.noHp, required this.alamat, required this.kota, required this.onEdit});
 
   @override
   State<EditCustomerModal> createState() => EditCustomerModalState();
@@ -250,6 +251,17 @@ Future<void> _editCustomer(
 
       // Call a function to synchronize the changes with the backend
       synchronizeEditCustomers();
+
+       // Create a Customer object to pass back to the parent
+      Customer updatedCustomer = Customer(
+        nama: nama,
+        noHp: noHp,
+        alamat: alamat,
+        kota: kota,
+      );
+
+      // Call the onEdit callback
+      widget.onEdit(updatedCustomer);
 
       // Close the modal after successful update
       Navigator.pop(context);

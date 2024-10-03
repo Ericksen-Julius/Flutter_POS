@@ -16,6 +16,7 @@ class MasterCustomerProfile extends StatefulWidget {
   final String alamat;
   final String kota;
   final Function(String) onDelete;
+  final Function(Customer) onEdit;
 
   const MasterCustomerProfile(
       {super.key,
@@ -23,7 +24,8 @@ class MasterCustomerProfile extends StatefulWidget {
       required this.noHp,
       required this.alamat,
       required this.kota,
-      required this.onDelete});
+      required this.onDelete,
+      required this.onEdit});
 
   @override
   State<MasterCustomerProfile> createState() => _MasterCustomerProfileState();
@@ -127,16 +129,17 @@ class _MasterCustomerProfileState extends State<MasterCustomerProfile> {
                       onPressed: () {
                         print("pencet modal");
                         showModalBottomSheet(
-                          context: context, 
+                          context: context,
                           isScrollControlled: true,
-                          builder: (BuildContext context) {
-                            return EditCustomerModal(
-                              nama: widget.nama,
-                              noHp: widget.noHp,
-                              alamat: widget.alamat,
-                              kota: widget.kota,
-                            ); 
-                          },
+                          builder: (context) => EditCustomerModal(
+                            nama: widget.nama,
+                            noHp: widget.noHp,
+                            alamat: widget.alamat,
+                            kota: widget.kota,
+                            onEdit: (Customer updatedCustomer) {
+                              widget.onEdit(updatedCustomer);
+                            },
+                          ),
                         );
                       },
                       icon: Icon(

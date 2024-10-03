@@ -35,7 +35,7 @@ Future<void> synchronizeKurs() async {
     );
 
     final body = jsonDecode(response.body);
-    print(body);
+    // print(body);
   } catch (e) {
   }
 }

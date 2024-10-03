@@ -35,6 +35,15 @@ class MasterCustomerPageState extends State<MasterCustomerPage> {
     // sp.remove('temporaryDeleteCustomer');
   }
 
+  void _updateCustomer(Customer updatedCustomer) {
+    setState(() {
+      int index = customers.indexWhere((c) => c.noHp == updatedCustomer.noHp);
+      if (index != -1) {
+        customers[index] = updatedCustomer; 
+      }
+    });
+  }
+
   @override
   void dispose() {
     _searchController.removeListener(_filterCustomers);
@@ -167,6 +176,7 @@ class MasterCustomerPageState extends State<MasterCustomerPage> {
                         alamat: filteredCustomers[index].alamat!,
                         kota: filteredCustomers[index].kota!,
                         onDelete: _deleteItem,
+                        onEdit: _updateCustomer,
                       ),
                     );
                   },

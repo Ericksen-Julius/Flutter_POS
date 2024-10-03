@@ -28,21 +28,16 @@ class _KursBodyState extends State<KursBody> {
 
   // print("Mulai fetchData...");
 
-    String? kursLocal = sp.getString('unsentKurs');
+    String? kursLocal = sp.getString('kursAllLocal');
     print(kursLocal);
     // return;
 
     try{
       // print("Coba decode local data...");
-      Map<String, dynamic> kursMapLocal = jsonDecode(kursLocal ?? '[]');
+      List<dynamic> kursMapLocal = jsonDecode(kursLocal ?? '[]');
       
       setState(() {
-        kursData = [
-          {
-            'TANGGAL': kursMapLocal['tanggal'],
-            'KURS': kursMapLocal['kurs'],
-          }
-        ];
+        kursData = kursMapLocal;
     });
       print("Local data berhasil dimuat.");
     } catch (e) {
@@ -52,7 +47,7 @@ class _KursBodyState extends State<KursBody> {
 
     try {
       // Now try fetching from server
-      const url = "http://10.0.2.2:8082/proyek_pos/kurs";
+      const url = "http://10.0.2.2:8082/proyek_pos/getAllKurs";
       final uri = Uri.parse(url);
       final response = await http.get(
         uri,
@@ -63,6 +58,7 @@ class _KursBodyState extends State<KursBody> {
       if (response.statusCode == 200) {
         setState(() {
           kursData = json['data'];
+          sp.setString('kursAllLocal', jsonEncode(kursData));
         });
       } else {
         print('Server error: ${response.statusCode}');
