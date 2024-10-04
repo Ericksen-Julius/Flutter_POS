@@ -442,6 +442,7 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
                         child: TextField(
                           controller: _jumlahController,
                           enabled: itemClicked ? true : false,
+                          keyboardType: TextInputType.number,
                           style: TextStyle(color: Color(0xFF667085)),
                           decoration: InputDecoration(
                             // hintText: "",
@@ -613,10 +614,12 @@ class TransaksiPenjualanPageState extends State<TransaksiPenjualanPage> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => CheckOutPage(
-                          totalHarga: (total *
-                                  (100 - double.parse(_diskonController.text)) /
-                                  100)
-                              .toInt()),
+                        totalHarga: (total *
+                                (100 - double.parse(_diskonController.text)) /
+                                100)
+                            .toInt(),
+                        discount: double.parse(_diskonController.text),
+                      ),
                     ),
                   );
                 }

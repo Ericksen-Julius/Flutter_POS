@@ -1,5 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -10,10 +12,13 @@ import 'package:proyek_pos/helper/NotaSynchronize.dart';
 import 'package:proyek_pos/main.dart';
 import 'package:proyek_pos/model/CartItemModel.dart';
 import 'package:proyek_pos/page/DashboardPage.dart';
+import 'package:proyek_pos/page/NotaPage.dart';
 
 class CheckOutPage extends StatefulWidget {
   final int totalHarga;
-  const CheckOutPage({super.key, required this.totalHarga});
+  final double discount;
+  const CheckOutPage(
+      {super.key, required this.totalHarga, required this.discount});
 
   @override
   State<CheckOutPage> createState() => _CheckOutPageState();
@@ -27,6 +32,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
   int kembali = 0;
   List<dynamic> jenisBayar = [];
   final TextEditingController nominalController = TextEditingController();
+  final TextEditingController noRekController = TextEditingController();
   @override
   void initState() {
     // TODO: implement initState
@@ -35,35 +41,34 @@ class _CheckOutPageState extends State<CheckOutPage> {
     totalBayar = totalBiaya;
     kembali = 0;
     nominalController.text = formatNumber(totalBiaya);
-    nominalController.addListener((){
+    nominalController.addListener(() {
       _updateTotalKembali();
     });
     fetchJenisBayar();
   }
 
-  Future<void> _updateTotalKembali()async {
-    if(nominalController.text.isNotEmpty){
+  Future<void> _updateTotalKembali() async {
+    if (nominalController.text.isNotEmpty) {
       String value = nominalController.text.replaceAll(RegExp(r'[^0-9]'), '');
       // print('value');
       // print(value);
       // print(kembali);
       if (value.isNotEmpty) {
-      int nominal = int.parse(value);
-      kembali = nominal - totalBiaya;
+        int nominal = int.parse(value);
+        kembali = nominal - totalBiaya;
 
-      setState(() {
-        kembali = kembali;
-        totalBayar = nominal;
-      });
-      _formatAndSetText(nominal);
+        setState(() {
+          kembali = kembali;
+          totalBayar = nominal;
+        });
+        _formatAndSetText(nominal);
+      } else {
+        setState(() {
+          kembali = 0;
+          totalBayar = 0;
+        });
+      }
     } else {
-      setState(() {
-        kembali = 0;
-        totalBayar = 0;
-      });
-    }
-
-    } else{
       setState(() {
         kembali = 0;
         totalBayar = totalBiaya;
@@ -73,18 +78,20 @@ class _CheckOutPageState extends State<CheckOutPage> {
   }
 
   void _formatAndSetText(int value) {
-  String formatted = formatNumber(value);
-  if (!nominalController.text.startsWith('Rp ')) {
-    formatted = 'Rp ' + nominalController.text.replaceAll(RegExp(r'[^0-9]'), '');
+    String formatted = formatNumber(value);
+    if (!nominalController.text.startsWith('Rp ')) {
+      formatted =
+          'Rp ' + nominalController.text.replaceAll(RegExp(r'[^0-9]'), '');
+    }
+
+    nominalController.value = TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(
+        offset: formatted.length,
+      ),
+    );
   }
-  
-  nominalController.value = TextEditingValue(
-    text: formatted,
-    selection: TextSelection.collapsed(
-      offset: formatted.length,
-    ),
-  );
-}
+
   void _toggleMetodePembayaran(int index) {
     setState(() {
       if (!isSelected[index]) {
@@ -194,10 +201,34 @@ class _CheckOutPageState extends State<CheckOutPage> {
                   ),
                 ),
               ),
-              if (isSelected.contains(true) && findFirstTrueIndex(isSelected) != -1) // Check if any button is selected
+              if (isSelected.contains(true) &&
+                  findFirstTrueIndex(isSelected) !=
+                      -1) // Check if any button is selected
                 Column(
                   children: [
                     SizedBox(height: 20),
+                    if (jenisBayar[findFirstTrueIndex(isSelected)]
+                                ['JENIS_BAYAR']
+                            .toLowerCase() !=
+                        'cash')
+                      TextField(
+                        controller: noRekController,
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans Reguler',
+                          color: Colors.black,
+                        ),
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                              borderSide: BorderSide(
+                                color: Colors.black,
+                                width: 2.0,
+                              )),
+                          hintText: 'Nomor Rekening',
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
+                    SizedBox(height: 5),
                     TextField(
                       controller: nominalController,
                       style: TextStyle(
@@ -208,14 +239,13 @@ class _CheckOutPageState extends State<CheckOutPage> {
                         FilteringTextInputFormatter.digitsOnly,
                         _RupiahInputFormatter(),
                       ],
-                      decoration: InputDecoration(  
+                      decoration: InputDecoration(
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          borderSide: BorderSide(
-                            color: Colors.black,
-                            width: 2.0,
-                          )
-                        ),
+                            borderRadius: BorderRadius.circular(8.0),
+                            borderSide: BorderSide(
+                              color: Colors.black,
+                              width: 2.0,
+                            )),
                         hintText: 'Nominal Pembayaran',
                       ),
                       keyboardType: TextInputType.number,
@@ -456,6 +486,20 @@ class _CheckOutPageState extends State<CheckOutPage> {
   //     return;
   //   }
   // }
+  String generateNotaCode() {
+    String year = DateTime.now().year.toString().substring(2);
+
+    String randomNumber = List.generate(
+            10,
+            (index) =>
+                (index == 0) ? Random().nextInt(9) + 1 : Random().nextInt(10))
+        .join('');
+
+    String notaCode = "NT$year$randomNumber";
+
+    return notaCode;
+  }
+
   Future<void> _inputNota(BuildContext context) async {
     String noHp = sp.getString('customer_noHp')!;
     // print(noHp);
@@ -496,24 +540,49 @@ class _CheckOutPageState extends State<CheckOutPage> {
     items.forEach((item) {
       barangBody.add({'barcode': item.produk.barcodeID, 'count': item.count});
     });
+    List<Map<String, dynamic>> barangDibeli = [];
+    items.forEach((item) {
+      barangDibeli.add({
+        'nama': item.produk.nama,
+        'count': item.count,
+        'berat': item.produk.berat
+      });
+    });
 
     Map<String, dynamic> notaData = {
       "no_hp": noHp,
+      "nota_code": generateNotaCode(),
       "user_input": user['USER_ID'],
       "barang": barangBody,
       "kode_bayar": jenisBayar[firstTrueIndex]['KODE'],
       "nominal": widget.totalHarga,
+      "no_rek": noRekController.text
     };
-    print('test');
-    print(notaData);
-    sp.remove('cartJson');
-    sp.remove('customer_noHp');
-    sp.remove('customer_nama');
+    String nama = sp.getString('customer_nama')!;
+    // print(sp.getString('admin'));
+
+    // return;
+    // print('test');
+    // print(notaData);
 
     Future.delayed(Duration.zero, () {
       Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => Dashboardpage()));
+        context,
+        MaterialPageRoute(
+          builder: (context) => NotaPage(
+            data: notaData,
+            dataBarang: barangDibeli,
+            admin: user['NAMA'],
+            userName: nama,
+            discount: widget.discount,
+            invoiceDate: DateTime.now(),
+          ),
+        ),
+      );
     });
+    sp.remove('cartJson');
+    sp.remove('customer_noHp');
+    sp.remove('customer_nama');
     await saveUnsentNotaLocally(notaData);
     await synchronizeNota();
 

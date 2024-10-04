@@ -86,7 +86,7 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: '/checkout',
+      initialRoute: '/dashboard',
       routes: {
         '/': (context) => BottomNavbar(),
         '/splash': (context) => SplashScreenPage(),
@@ -98,9 +98,6 @@ class _MainAppState extends State<MainApp> {
         '/masterCustomer': (context) => MasterCustomerPage(),
         '/transaksipenjualan': (context) => TransaksiPenjualanPage(),
         '/cariCustomer': (context) => CariCustomerPage(),
-        '/checkout': (context) => CheckOutPage(
-              totalHarga: 20000,
-            ),
       },
       // title: 'POS UBS',
       // // theme: new ThemeData(scaffoldBackgroundColor: Color.fromRGBO(0, 0, 0, 1)),
