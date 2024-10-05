@@ -534,6 +534,32 @@ class _CheckOutPageState extends State<CheckOutPage> {
         },
       );
       return;
+    } else {
+      if (jenisBayar[firstTrueIndex]['JENIS_BAYAR'].toLowerCase() != 'cash') {
+        if (noRekController.text.isEmpty) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text(
+                  "Failed",
+                  style: TextStyle(color: Colors.red),
+                ),
+                content: Text("Silahkan isi nomor rekening terlebih dahulu"),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text("OK"),
+                  )
+                ],
+              );
+            },
+          );
+          return;
+        }
+      }
     }
 
     List<Map<String, dynamic>> barangBody = [];
@@ -548,6 +574,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
         'berat': item.produk.berat
       });
     });
+    // print(widget.discount);
+    // return;
 
     Map<String, dynamic> notaData = {
       "no_hp": noHp,
@@ -556,7 +584,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
       "barang": barangBody,
       "kode_bayar": jenisBayar[firstTrueIndex]['KODE'],
       "nominal": widget.totalHarga,
-      "no_rek": noRekController.text
+      "no_rek": noRekController.text,
+      "discount": widget.discount
     };
     String nama = sp.getString('customer_nama')!;
     // print(sp.getString('admin'));
