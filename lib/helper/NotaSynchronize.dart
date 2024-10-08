@@ -32,7 +32,6 @@ Future<void> synchronizeNota() async {
         },
         body: json.encode(nota),
       );
-
       final body = jsonDecode(response.body);
       if (response.statusCode == 200 && body['success']) {
         // Remove successfully sent nota from the local storage

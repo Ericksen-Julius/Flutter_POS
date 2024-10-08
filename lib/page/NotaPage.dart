@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:proyek_pos/main.dart';
+import 'package:proyek_pos/page/BottomNavbar.dart';
 import 'package:proyek_pos/page/DashboardPage.dart';
 
 class NotaPage extends StatefulWidget {
@@ -160,11 +161,11 @@ class _NotaPageState extends State<NotaPage> {
                         // leading: Icon(item['icon'], color: item['iconColor']),
                         title: Text(item['nama']),
                         subtitle: Text(
-                            "${item['count']} x ${formatNumber(int.parse(item['berat']) * kurs)}"),
+                            "${item['count']} x ${formatNumber2(double.parse(item['berat']) * kurs)}"),
                         trailing: Text(
-                          formatNumber(
-                              (int.parse(item['berat']) * item['count'] * kurs)
-                                  .toInt()),
+                          formatNumber2(
+                              (double.parse(item['berat']) * item['count'] * kurs)
+                                  .toDouble()),
                           style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontFamily: "Plus Jakarta Sans Bold",
@@ -223,7 +224,7 @@ class _NotaPageState extends State<NotaPage> {
                         Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => Dashboardpage()));
+                                builder: (context) => BottomNavbar()));
                       },
                       child: Text("Back To Dashboard"),
                     ),

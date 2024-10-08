@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:proyek_pos/main.dart';
 import 'package:proyek_pos/page/OnBoardingPage.dart';
 import 'package:proyek_pos/style/colors.dart';
 
@@ -16,6 +17,7 @@ class _SplashScreenPageState extends State<SplashScreenPage> {
   @override
   void initState() {
     super.initState();
+    sp.remove('fetchNota');
 
     Timer(Duration(seconds: 3), () {
       Navigator.of(context).pushReplacement(

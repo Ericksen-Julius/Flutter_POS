@@ -11,6 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:proyek_pos/helper/NotaSynchronize.dart';
 import 'package:proyek_pos/main.dart';
 import 'package:proyek_pos/model/CartItemModel.dart';
+import 'package:proyek_pos/model/NotaModel.dart';
 import 'package:proyek_pos/page/DashboardPage.dart';
 import 'package:proyek_pos/page/NotaPage.dart';
 
@@ -591,9 +592,67 @@ class _CheckOutPageState extends State<CheckOutPage> {
     // print(sp.getString('admin'));
 
     // return;
-    // print('test');
-    // print(notaData);
+    print('test');
+    print(notaData);
 
+    int kurs = sp.getInt('kursLocal')!;
+
+    List<Map<String, dynamic>> barangBodyBerat = [];
+    items.forEach((item) {
+      barangBodyBerat.add({'nama': item.produk.nama, 'barcode': item.produk.barcodeID, 'count': item.count, 'berat':item.produk.berat});
+    });
+
+    print(barangBodyBerat.toString());
+
+    String? notasLocal = sp.getString('fetchNota');
+    try {
+      // print("Coba decode local data...");
+      List<dynamic> notaListLocal = jsonDecode(notasLocal ?? '[]');
+      List<NotaModel> notas = [];
+      notas = notaListLocal.map((item) => NotaModel.fromJson(item)).toList();
+      notas.add(NotaModel(
+        noDok: notaData['nota_code'].toString(),
+        noHp: notaData['no_hp'].toString(),   
+        noRek: notaData['no_rek'].toString(),
+        nominal: notaData['nominal'].toString(),
+        discount: widget.discount.toString(),
+        userInput: notaData['user_input'].toString(),
+        kodeBayar: notaData['kode_bayar'].toString(),
+    // Count should reflect the length of the 'barang' list
+    barang: (barangBodyBerat as List).map((item) => Barang(
+      barcode: item['barcode']?.toString(),
+      count: item['count']?.toString(),
+      kurs: kurs.toString(),
+      harga: (int.parse(item['berat']!) * kurs).toString(),
+    )).toList(),
+    tanggal: DateTime.now().toString(),
+    customerName: nama, // Add customer name if available
+    userName: user['NAMA'], // Add user name if available
+          // no_dok: notaData['nota_code'].toString(),
+          // no_hp: notaData['no_hp'].toString(),   
+          // no_rek: notaData['no_rek'].toString(),
+          // nominal: notaData['nominal'].toString(),
+          // discount: notaData['discount'].toString(),
+          // user: notaData['user_input'].toString(),
+          // kode_bayar: notaData['kode_bayar'].toString(),
+          // count: notaData['barang'].length.toString(),
+          // tanggal: DateTime.now().toString(),
+          // // tanggal: DateFormat('dd-MMM-yy').format(DateTime.now()).toUpperCase(),
+          // // barcode: notaData['barang'].barcode.toString(),
+          // // kurs: notaData['barang'].kurs.toString(),
+          // // harga: notaData['barang'].harga.toString(),
+          // barcode: (notaData['barang'] as List).map((item) => item['barcode'].toString()).join(', '),
+          // kurs: (notaData['barang'] as List).map((item) => item['kurs']?.toString() ?? '').join(', '),
+          // harga: (notaData['barang'] as List).map((item) => item['harga']?.toString() ?? '').join(', '),
+          ));
+      sp.setString('fetchNota', jsonEncode(notas));
+      print(sp.getString('fetchNota'));
+      print("Local data nota berhasil dimuat.");
+    } catch (e) {
+      print('Error decoding JSON local: $e');
+    }
+
+    try {
     Future.delayed(Duration.zero, () {
       Navigator.pushReplacement(
         context,
@@ -653,10 +712,10 @@ class _CheckOutPageState extends State<CheckOutPage> {
     //     // Save locally if not successful
     //     await saveUnsentNotaLocally(notaData);
     //   }
-    // } catch (e) {
-    //   // Save locally in case of any exception
-    //   await saveUnsentNotaLocally(notaData);
-    // }
+    } catch (e) {
+      // Save locally in case of any exception
+      await saveUnsentNotaLocally(notaData);
+    }
   }
 }
 
