@@ -13,6 +13,7 @@ import 'package:proyek_pos/page/CheckoutPage.dart';
 import 'package:proyek_pos/page/DashboardPage.dart';
 import 'package:proyek_pos/page/Loginpage.dart';
 import 'package:proyek_pos/page/MasterCustomerPage.dart';
+import 'package:proyek_pos/page/NotaPage.dart';
 import 'package:proyek_pos/page/OnBoardingPage.dart';
 import 'package:proyek_pos/page/Profile.dart';
 import 'package:proyek_pos/page/Riwayat.dart';
@@ -84,6 +85,14 @@ class _MainAppState extends State<MainApp> {
 
   @override
   Widget build(BuildContext context) {
+    List<Map<String, dynamic>> barangDibeli = [];
+    barangDibeli.add({'nama': "Test", 'count': 3, 'berat': "3"});
+    Map<String, dynamic> notaData = {
+      "no_hp": "87736473", // perlu
+      "nota_code": "NR^%@%%@", //perlu
+      "nominal": 20000, //perlu
+    };
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       initialRoute: '/riwayat',
@@ -98,6 +107,14 @@ class _MainAppState extends State<MainApp> {
         '/masterCustomer': (context) => MasterCustomerPage(),
         '/transaksipenjualan': (context) => TransaksiPenjualanPage(),
         '/cariCustomer': (context) => CariCustomerPage(),
+        '/cekNota': (context) => NotaPage(
+              data: notaData,
+              dataBarang: barangDibeli,
+              admin: "Erick",
+              userName: "SEN",
+              discount: 20,
+              invoiceDate: DateTime.now(),
+            ),
       },
       // title: 'POS UBS',
       // // theme: new ThemeData(scaffoldBackgroundColor: Color.fromRGBO(0, 0, 0, 1)),
