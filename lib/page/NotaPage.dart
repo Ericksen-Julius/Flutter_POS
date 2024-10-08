@@ -261,7 +261,7 @@ Thank you for your business!
                       final item = widget.dataBarang[index];
                       return ListTile(
                         // leading: Icon(item['icon'], color: item['iconColor']),
-                        title: Text(item['nama']),
+                        title: Text(item  ['nama']),
                         subtitle: Text(
                             "${item['count']} x ${formatNumber2(double.parse(item['berat']) * kurs)}"),
                         trailing: Text(

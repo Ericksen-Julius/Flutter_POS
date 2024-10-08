@@ -501,6 +501,18 @@ class _CheckOutPageState extends State<CheckOutPage> {
     return notaCode;
   }
 
+  String formatTanggalNow() {
+  DateTime now = DateTime.now();
+
+  // Define the format: day, abbreviated month (MMM), and 2-digit year
+  DateFormat formatter = DateFormat('dd-MMM-yy');
+
+  // Format the current date
+  String formattedDate = formatter.format(now).toUpperCase();
+
+  return formattedDate;
+}
+
   Future<void> _inputNota(BuildContext context) async {
     String noHp = sp.getString('customer_noHp')!;
     // print(noHp);
@@ -620,12 +632,13 @@ class _CheckOutPageState extends State<CheckOutPage> {
         kodeBayar: notaData['kode_bayar'].toString(),
     // Count should reflect the length of the 'barang' list
     barang: (barangBodyBerat as List).map((item) => Barang(
+      nama: item['nama'].toString(),
       barcode: item['barcode']?.toString(),
       count: item['count']?.toString(),
       kurs: kurs.toString(),
       harga: (int.parse(item['berat']!) * kurs).toString(),
     )).toList(),
-    tanggal: DateTime.now().toString(),
+    tanggal: formatTanggalNow(),
     customerName: nama, // Add customer name if available
     userName: user['NAMA'], // Add user name if available
           // no_dok: notaData['nota_code'].toString(),
